@@ -47,12 +47,12 @@ export default function CameraRig({ parallax = 1 }) {
 
     // Subtle breathing so a still frame is never truly still
     const time = state.clock.elapsedTime
-    const breatheY = Math.sin(time * 0.4) * 0.06
-    const breatheX = Math.cos(time * 0.27) * 0.04
+    const breatheY = Math.sin(time * 0.35) * 0.04
+    const breatheX = Math.cos(time * 0.24) * 0.03
 
-    // Handheld parallax from the pointer
-    const px = journey.smoothMouse.x * 0.55 * parallax
-    const py = -journey.smoothMouse.y * 0.35 * parallax
+    // Handheld parallax from the pointer — restrained, professional
+    const px = journey.smoothMouse.x * 0.4 * parallax
+    const py = -journey.smoothMouse.y * 0.25 * parallax
 
     camera.position.set(
       pos.x + px + breatheX,
@@ -60,12 +60,12 @@ export default function CameraRig({ parallax = 1 }) {
       pos.z
     )
 
-    look.x += journey.smoothMouse.x * 0.9 * parallax
-    look.y += -journey.smoothMouse.y * 0.55 * parallax
+    look.x += journey.smoothMouse.x * 0.7 * parallax
+    look.y += -journey.smoothMouse.y * 0.45 * parallax
     camera.lookAt(look)
 
-    // Gentle cinematic roll in the curves of the path
-    camera.rotation.z += Math.sin(t * Math.PI * 2) * 0.015 + journey.smoothMouse.x * 0.008
+    // A whisper of roll through the path's curves
+    camera.rotation.z += Math.sin(t * Math.PI * 2) * 0.008 + journey.smoothMouse.x * 0.005
   })
 
   return null

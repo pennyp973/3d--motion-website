@@ -80,7 +80,7 @@ export default function Loader({ sceneReady }) {
               paddingLeft: '0.55em',
             }}
           >
-            Lumière
+            CRD Property Group
           </motion.div>
 
           {/* hairline progress */}

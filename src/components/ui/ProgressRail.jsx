@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { journey } from '../../journey/journeyState'
+import { useRafLoop } from '../../hooks/useRafLoop'
 import { CHAPTERS } from '../../journey/chapters'
 
 // Hairline progress rail on the right edge with chapter markers.
@@ -9,22 +10,18 @@ export default function ProgressRail() {
   const fillRef = useRef()
   const dotRefs = useRef([])
 
-  useEffect(() => {
-    const update = () => {
-      const t = journey.smooth
-      if (fillRef.current) {
-        fillRef.current.style.transform = `scaleY(${t})`
-      }
-      dotRefs.current.forEach((el, i) => {
-        if (!el) return
-        const ch = CHAPTERS[i]
-        const on = t >= ch.range[0] - 0.02 && t <= ch.range[1] + 0.02
-        el.style.color = on ? 'var(--gold)' : 'var(--ink-faint)'
-      })
+  useRafLoop(() => {
+    const t = journey.smooth
+    if (fillRef.current) {
+      fillRef.current.style.transform = `scaleY(${t})`
     }
-    gsap.ticker.add(update)
-    return () => gsap.ticker.remove(update)
-  }, [])
+    dotRefs.current.forEach((el, i) => {
+      if (!el) return
+      const ch = CHAPTERS[i]
+      const on = t >= ch.range[0] - 0.02 && t <= ch.range[1] + 0.02
+      el.style.color = on ? 'var(--gold)' : 'var(--ink-faint)'
+    })
+  })
 
   const goTo = (center) => {
     const max = document.documentElement.scrollHeight - window.innerHeight
@@ -61,20 +58,20 @@ export default function ProgressRail() {
             key={ch.id}
             ref={(el) => (dotRefs.current[i] = el)}
             onClick={() => goTo(ch.center)}
-            aria-label={`Go to ${ch.title}`}
+            aria-label={`Go to ${ch.label}`}
             style={{
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              fontFamily: 'var(--font-display)',
-              fontSize: '0.72rem',
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.58rem',
               letterSpacing: '0.12em',
               color: 'var(--ink-faint)',
               transition: 'color 0.5s ease',
               padding: '0.1rem 0.2rem',
             }}
           >
-            {ch.numeral}
+            {String(i + 1).padStart(2, '0')}
           </button>
         ))}
       </div>

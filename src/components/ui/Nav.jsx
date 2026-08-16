@@ -1,19 +1,21 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
-import { CHAPTERS } from '../../journey/chapters'
+import { NAV_LINKS } from '../../journey/chapters'
+import { useIsMobile } from '../../hooks/useIsMobile'
 
-// Minimal top bar + full-screen chapter menu.
-// Menu links glide the scroll position to a chapter's center.
+// Minimal corporate nav: wordmark left, section links right.
+// On mobile the links collapse into a full-screen menu.
 export default function Nav() {
   const [open, setOpen] = useState(false)
+  const isMobile = useIsMobile()
 
-  const goTo = (center) => {
+  const goTo = (target) => {
     setOpen(false)
     const max = document.documentElement.scrollHeight - window.innerHeight
     gsap.to(window, {
-      scrollTo: { y: center * max },
-      duration: 2.2,
+      scrollTo: { y: target * max },
+      duration: 2.4,
       ease: 'power2.inOut',
     })
   }
@@ -30,61 +32,91 @@ export default function Nav() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: 'clamp(1.2rem, 3vw, 2.2rem) clamp(1.5rem, 4vw, 3.5rem)',
-          mixBlendMode: 'difference',
+          padding: 'clamp(1.1rem, 2.6vw, 1.9rem) clamp(1.5rem, 4vw, 3.2rem)',
+          background: 'linear-gradient(to bottom, rgba(5,5,5,0.55), transparent)',
         }}
       >
         <motion.button
           onClick={() => goTo(0)}
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.8, duration: 1.2 }}
+          transition={{ delay: 2.6, duration: 1.1 }}
           style={{
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             color: 'var(--ink)',
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.7rem',
-            fontWeight: 400,
-            letterSpacing: '0.5em',
-            textTransform: 'uppercase',
-          }}
-        >
-          Lumière
-        </motion.button>
-
-        <motion.button
-          onClick={() => setOpen((v) => !v)}
-          initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 3.0, duration: 1.2 }}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--ink)',
-            fontFamily: 'var(--font-body)',
-            fontSize: '0.6rem',
-            fontWeight: 400,
-            letterSpacing: '0.45em',
-            textTransform: 'uppercase',
             display: 'flex',
-            alignItems: 'center',
-            gap: '0.8rem',
+            alignItems: 'baseline',
+            gap: '0.7rem',
           }}
+          aria-label="CRD Property Group — back to top"
         >
-          {open ? 'Close' : 'Menu'}
           <span
             style={{
-              display: 'inline-block',
-              width: 24,
-              height: 1,
-              background: 'currentColor',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 600,
+              fontSize: '1.05rem',
+              letterSpacing: '0.34em',
             }}
-          />
+          >
+            CRD
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-body)',
+              fontWeight: 400,
+              fontSize: '0.58rem',
+              letterSpacing: '0.4em',
+              textTransform: 'uppercase',
+              color: 'var(--ink-dim)',
+            }}
+          >
+            Property Group
+          </span>
         </motion.button>
+
+        {!isMobile && (
+          <motion.nav
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 2.8, duration: 1.1 }}
+            style={{ display: 'flex', gap: 'clamp(1.2rem, 2.6vw, 2.6rem)', alignItems: 'center' }}
+          >
+            {NAV_LINKS.map((l) => (
+              <button key={l.label} className="nav-link" onClick={() => goTo(l.target)}>
+                {l.label}
+              </button>
+            ))}
+          </motion.nav>
+        )}
+
+        {isMobile && (
+          <motion.button
+            onClick={() => setOpen((v) => !v)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.8, duration: 1 }}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--ink)',
+              fontFamily: 'var(--font-body)',
+              fontSize: '0.62rem',
+              fontWeight: 500,
+              letterSpacing: '0.4em',
+              textTransform: 'uppercase',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.7rem',
+            }}
+          >
+            {open ? 'Close' : 'Menu'}
+            <span style={{ display: 'inline-block', width: 22, height: 1, background: 'currentColor' }} />
+          </motion.button>
+        )}
       </header>
 
       <AnimatePresence>
@@ -94,7 +126,7 @@ export default function Nav() {
             initial={{ clipPath: 'inset(0 0 100% 0)' }}
             animate={{ clipPath: 'inset(0 0 0% 0)' }}
             exit={{ clipPath: 'inset(0 0 100% 0)' }}
-            transition={{ duration: 0.9, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
             style={{
               position: 'fixed',
               inset: 0,
@@ -105,43 +137,31 @@ export default function Nav() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: 'clamp(0.6rem, 2vh, 1.4rem)',
+              gap: 'clamp(0.7rem, 2.2vh, 1.5rem)',
             }}
           >
-            {CHAPTERS.map((ch, i) => (
+            {NAV_LINKS.map((l, i) => (
               <motion.button
-                key={ch.id}
-                onClick={() => goTo(ch.center)}
-                initial={{ opacity: 0, y: 30 }}
+                key={l.label}
+                onClick={() => goTo(l.target)}
+                initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ delay: 0.3 + i * 0.07, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ delay: 0.25 + i * 0.06, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
                 className="menu-item"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: '1.6rem',
-                  color: 'var(--ink)',
-                }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)' }}
               >
-                <span className="eyebrow" style={{ fontSize: '0.55rem', color: 'var(--gold)' }}>
-                  {ch.numeral}
-                </span>
                 <span
                   className="menu-item-title"
                   style={{
                     fontFamily: 'var(--font-display)',
                     fontWeight: 300,
-                    fontSize: 'clamp(2rem, 5.5vw, 4rem)',
-                    letterSpacing: '0.04em',
-                    lineHeight: 1.15,
+                    fontSize: 'clamp(2.2rem, 8vw, 3.6rem)',
+                    letterSpacing: '0.03em',
                     transition: 'color 0.4s ease, letter-spacing 0.6s ease',
                   }}
                 >
-                  {ch.title}
+                  {l.label}
                 </span>
               </motion.button>
             ))}
