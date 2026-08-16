@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { mats } from './materials'
-import { ExtrudedText, B } from './Building'
+import { ExtrudedText, B } from './archviz'
 import { journey } from '../../journey/journeyState'
 import { TIMINGS } from '../../journey/chapters'
 

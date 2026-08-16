@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { useGLTF, Clone } from '@react-three/drei'
 import * as THREE from 'three'
 import { mats, geoms, sets, pbrMaterial } from './materials'
-import { InstancedList, ExtrudedText, mulberry32 } from './Building'
+import { InstancedList, ExtrudedText, mulberry32 } from './archviz'
 import { journey } from '../../journey/journeyState'
 import { TIMINGS } from '../../journey/chapters'
 

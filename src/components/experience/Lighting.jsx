@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
-import { B } from './Building'
+import { B } from './archviz'
 
 // Blue-hour architectural lighting: a real evening-sky HDRI drives
 // ambient light and every reflection; one soft cool key carries the

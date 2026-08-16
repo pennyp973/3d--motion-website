@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { mats, geoms } from './materials'
-import { InstancedList, mulberry32 } from './Building'
+import { InstancedList, mulberry32 } from './archviz'
 
 // Urban context. The HDRI sky is the backdrop; this adds a believable
 // Northeast skyline: near neighborhood mid-rises that ground the block,

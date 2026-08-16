@@ -1,118 +1,22 @@
-import { useMemo, useRef, useLayoutEffect, useState, useEffect, Suspense } from 'react'
+import { useMemo, useRef, useLayoutEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
-import helvBold from 'three/examples/fonts/helvetiker_bold.typeface.json'
-import helvReg from 'three/examples/fonts/helvetiker_regular.typeface.json'
 import { mats, geoms, sets, pbrMaterial } from './materials'
 import { journey } from '../../journey/journeyState'
 import { TIMINGS } from '../../journey/chapters'
+import { B, smoothstep, mulberry32, InstancedList, ExtrudedText } from './archviz'
 
 // ————————————————————————————————————————————————————————————————
-// The CRD hero property. Three articulated volumes on a shared podium:
-//   A — west wing, x -17…-6: load-bearing stone, punched windows, 6 levels
-//   B — centre bay, x -6…6: full-height curtain wall, proud of the line
-//   C — east wing, x 6…17: bronze-anodised panels with recessed loggias
-// Footprint and interior datums are unchanged (front z=0, rear z=-28)
-// so the interior tour, signage and rooftop all still align.
+// FALLBACK PLACEHOLDER for the hero property.
 //
-// A professional GLB can replace this exterior: drop the file at
-// /public/models/crd-property.glb and it loads automatically.
+// This procedural building renders ONLY when no professional model is
+// present at /public/models/crd-property.glb (see HeroProperty.jsx).
+// Three articulated volumes on a shared podium:
+//   A — west wing, x -17…-6: stone, punched windows, 6 levels
+//   B — centre bay, x -6…6: full-height curtain wall, proud of the line
+//   C — east wing, x 6…17: bronze panels with recessed loggias
+// Footprint and datums follow B in archviz.jsx.
 // ————————————————————————————————————————————————————————————————
-
-export const B = {
-  W: 34,
-  D: 28,
-  PODIUM_H: 4.6,
-  FLOOR_H: 3.28,
-  FLOORS: 7,
-  TOP: 4.6 + 7 * 3.28, // 27.56
-  A_TOP: 4.6 + 5 * 3.28, // west wing height 21.0
-}
-
-const GLB_PATH = '/models/crd-property.glb'
-
-const fontBold = new FontLoader().parse(helvBold)
-const fontReg = new FontLoader().parse(helvReg)
-
-function smoothstep(a, b, x) {
-  const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1)
-  return t * t * (3 - 2 * t)
-}
-
-export function mulberry32(seed) {
-  let a = seed
-  return function () {
-    a |= 0
-    a = (a + 0x6d2b79f5) | 0
-    let t = Math.imul(a ^ (a >>> 15), 1 | a)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
-export function InstancedList({ geometry, material, items, castShadow, receiveShadow }) {
-  const ref = useRef()
-  useLayoutEffect(() => {
-    const m = new THREE.Matrix4()
-    const q = new THREE.Quaternion()
-    const e = new THREE.Euler()
-    const p = new THREE.Vector3()
-    const s = new THREE.Vector3()
-    items.forEach((it, i) => {
-      p.set(...it.pos)
-      e.set(it.rotX || 0, it.rotY || 0, 0)
-      q.setFromEuler(e)
-      s.set(...(it.scale || [1, 1, 1]))
-      m.compose(p, q, s)
-      ref.current.setMatrixAt(i, m)
-    })
-    ref.current.instanceMatrix.needsUpdate = true
-  }, [items])
-  return (
-    <instancedMesh
-      ref={ref}
-      args={[geometry, material, items.length]}
-      castShadow={castShadow}
-      receiveShadow={receiveShadow}
-    />
-  )
-}
-
-export function ExtrudedText({
-  text,
-  size = 0.5,
-  depth = 0.1,
-  material = mats.gold,
-  bold = true,
-  position = [0, 0, 0],
-  rotationY = 0,
-  align = 'center',
-}) {
-  const geometry = useMemo(() => {
-    const g = new TextGeometry(text, {
-      font: bold ? fontBold : fontReg,
-      size,
-      depth,
-      curveSegments: 6,
-      bevelEnabled: true,
-      bevelThickness: depth * 0.15,
-      bevelSize: size * 0.012,
-      bevelSegments: 2,
-    })
-    g.computeBoundingBox()
-    const bb = g.boundingBox
-    const w = bb.max.x - bb.min.x
-    const h = bb.max.y - bb.min.y
-    const ox = align === 'center' ? -w / 2 : align === 'right' ? -w : 0
-    g.translate(ox, -h / 2, 0)
-    return g
-  }, [text, size, depth, bold, align])
-
-  return <mesh geometry={geometry} material={material} position={position} rotation-y={rotationY} castShadow />
-}
 
 // ————— Shared deterministic unit data (placement + lighting agree) —————
 
@@ -685,22 +589,7 @@ function Seams() {
   )
 }
 
-// ————— Optional professional GLB replacement —————
-
-function HeroModel() {
-  const { scene } = useGLTF(GLB_PATH)
-  useMemo(() => {
-    scene.traverse((o) => {
-      if (o.isMesh) {
-        o.castShadow = true
-        o.receiveShadow = true
-      }
-    })
-  }, [scene])
-  return <primitive object={scene} />
-}
-
-function ProceduralBuilding({ isMobile }) {
+export default function ProceduralBuilding({ isMobile }) {
   return (
     <group>
       <StoneWing />
@@ -713,28 +602,4 @@ function ProceduralBuilding({ isMobile }) {
       <LitUnits />
     </group>
   )
-}
-
-export default function Building({ isMobile }) {
-  const [hasGlb, setHasGlb] = useState(false)
-
-  useEffect(() => {
-    // A dropped-in archviz model at /public/models/crd-property.glb
-    // replaces the procedural exterior automatically.
-    fetch(GLB_PATH, { method: 'HEAD' })
-      .then((r) => {
-        const ct = r.headers.get('content-type') || ''
-        setHasGlb(r.ok && !ct.includes('text/html'))
-      })
-      .catch(() => setHasGlb(false))
-  }, [])
-
-  if (hasGlb) {
-    return (
-      <Suspense fallback={<ProceduralBuilding isMobile={isMobile} />}>
-        <HeroModel />
-      </Suspense>
-    )
-  }
-  return <ProceduralBuilding isMobile={isMobile} />
 }

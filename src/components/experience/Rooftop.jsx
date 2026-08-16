@@ -2,7 +2,7 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { mats, geoms } from './materials'
-import { InstancedList, B } from './Building'
+import { InstancedList, B } from './archviz'
 import { journey } from '../../journey/journeyState'
 
 // Penthouse terrace: wood deck, glass parapet, pergola lounge,

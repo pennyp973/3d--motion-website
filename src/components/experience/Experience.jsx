@@ -4,7 +4,7 @@ import { AdaptiveDpr, ContactShadows } from '@react-three/drei'
 import * as THREE from 'three'
 import CameraRig from './CameraRig'
 import Lighting from './Lighting'
-import Building from './Building'
+import HeroProperty from './HeroProperty'
 import Interior from './Interior'
 import City from './City'
 import Landscape from './Landscape'
@@ -50,7 +50,7 @@ export default function Experience({ isMobile, onReady }) {
         <Suspense fallback={null}>
           <Lighting isMobile={isMobile} />
           <City isMobile={isMobile} />
-          <Building isMobile={isMobile} />
+          <HeroProperty isMobile={isMobile} />
           <Interior />
           <Landscape />
           <Rooftop />

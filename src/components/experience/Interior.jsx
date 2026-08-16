@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { mats, geoms } from './materials'
-import { InstancedList, ExtrudedText, B } from './Building'
+import { InstancedList, ExtrudedText, B } from './archviz'
 
 // Ground-floor interior: lobby (z 0…-13), corridor (-13…-16),
 // residence (-16…-28) ending in full-height glazing to the city.
