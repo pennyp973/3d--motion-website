@@ -34,14 +34,14 @@ export default function Rooftop() {
 
   const railings = useMemo(() => {
     const r = []
-    // glass panels around the deck zone (z -7 … -21, x ±10)
-    for (let i = 0; i < 10; i++) {
-      r.push({ pos: [-10 + 2.1 * i + 1, Y + 0.55, -7], scale: [1.95, 1.1, 1] })
-      r.push({ pos: [-10 + 2.1 * i + 1, Y + 0.55, -21], scale: [1.95, 1.1, 1] })
+    // glass panels around the deck zone (z -7 … -21, x -5…11)
+    for (let i = 0; i < 8; i++) {
+      r.push({ pos: [-5 + 2.1 * i + 1, Y + 0.55, -7], scale: [1.95, 1.1, 1] })
+      r.push({ pos: [-5 + 2.1 * i + 1, Y + 0.55, -21], scale: [1.95, 1.1, 1] })
     }
     for (let i = 0; i < 6; i++) {
-      r.push({ pos: [-10, Y + 0.55, -8.2 - 2.35 * i], scale: [1.95, 1.1, 1], rotY: Math.PI / 2 })
-      r.push({ pos: [10, Y + 0.55, -8.2 - 2.35 * i], scale: [1.95, 1.1, 1], rotY: Math.PI / 2 })
+      r.push({ pos: [-5, Y + 0.55, -8.2 - 2.35 * i], scale: [1.95, 1.1, 1], rotY: Math.PI / 2 })
+      r.push({ pos: [11, Y + 0.55, -8.2 - 2.35 * i], scale: [1.95, 1.1, 1], rotY: Math.PI / 2 })
     }
     return r
   }, [Y])
@@ -53,7 +53,7 @@ export default function Rooftop() {
       const z0 = -10 - s * 6
       for (let i = 0; i < 13; i++) {
         const u = i / 12
-        const x = -9 + u * 18
+        const x = -4.5 + u * 15
         const sag = Math.sin(u * Math.PI) * -0.7
         pts.push({ pos: [x, Y + 3.1 + sag, z0], scale: [0.07, 0.07, 0.07] })
       }
@@ -64,12 +64,12 @@ export default function Rooftop() {
   return (
     <group>
       {/* deck */}
-      <mesh geometry={geoms.plane} material={deckWood} rotation-x={-Math.PI / 2} position={[0, Y, -14]} scale={[20.4, 14.4, 1]} receiveShadow />
+      <mesh geometry={geoms.plane} material={deckWood} rotation-x={-Math.PI / 2} position={[3, Y, -14]} scale={[16.4, 14.4, 1]} receiveShadow />
       {/* deck border */}
-      <mesh position={[0, Y + 0.02, -14]} material={mats.darkMetal}>
-        <boxGeometry args={[20.8, 0.06, 14.8]} />
+      <mesh position={[3, Y + 0.02, -14]} material={mats.darkMetal}>
+        <boxGeometry args={[16.8, 0.06, 14.8]} />
       </mesh>
-      <mesh geometry={geoms.plane} material={deckWood} rotation-x={-Math.PI / 2} position={[0, Y + 0.06, -14]} scale={[20.4, 14.4, 1]} receiveShadow />
+      <mesh geometry={geoms.plane} material={deckWood} rotation-x={-Math.PI / 2} position={[3, Y + 0.06, -14]} scale={[16.4, 14.4, 1]} receiveShadow />
 
       {/* glass parapet */}
       {railings.map((r, i) => (
@@ -77,7 +77,7 @@ export default function Rooftop() {
       ))}
 
       {/* pergola over the west lounge */}
-      <group position={[-5.5, Y, -14]}>
+      <group position={[-1.5, Y, -14]}>
         {[
           [-2.6, -2.6],
           [-2.6, 2.6],
@@ -127,11 +127,11 @@ export default function Rooftop() {
 
       {/* terrace planters */}
       {[
-        [-9, -8],
-        [-9, -20],
-        [9, -8],
-        [9, -20],
-        [0, -20.5],
+        [-4, -8],
+        [-4, -20],
+        [10, -8],
+        [10, -20],
+        [3, -20.5],
       ].map(([x, z], i) => (
         <group key={i} position={[x, Y, z]}>
           <mesh position={[0, 0.3, 0]} material={mats.stoneDark}>

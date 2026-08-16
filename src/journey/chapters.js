@@ -12,11 +12,11 @@
 export const SCROLL_LENGTH_VH = 950
 
 export const CAMERA_PATH = [
-  // Aerial arrival — the building dominates
-  [26, 16, 40],
-  [15, 10, 30],
+  // Hero — elevated 3/4 architectural angle, slow push toward the property
+  [28.5, 14.5, 40.5],
+  [17, 9, 28],
   // Descent while the facade assembles
-  [7, 5.5, 21],
+  [6.5, 5, 20],
   // Approach the entrance on axis
   [0, 2.6, 11],
   // Through the opening doors
@@ -39,8 +39,8 @@ export const CAMERA_PATH = [
 ]
 
 export const LOOK_PATH = [
-  [0, 10, -6],
-  [0, 8, -3],
+  [-1, 10.5, -6],
+  [-0.5, 8, -3],
   [0, 5, 0],
   [0, 3.0, 0],
   [0, 2.5, -8],
