@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useProgress } from '@react-three/drei'
 import { journey } from '../../journey/journeyState'
 
-// Cinematic curtain: counts up while the WebGL scene compiles,
-// then parts to reveal the hall. Tracks real asset progress via
-// drei's loading manager and never finishes before the first frame.
+// Cinematic curtain: counts up while the hero film buffers, then
+// parts to reveal the opening frame.
 export default function Loader({ sceneReady }) {
-  const { progress: assetProgress, active } = useProgress()
   const [counter, setCounter] = useState(0)
   const [done, setDone] = useState(false)
 
@@ -16,10 +13,8 @@ export default function Loader({ sceneReady }) {
     const start = performance.now()
     const tick = (now) => {
       const elapsed = (now - start) / 1000
-      // Simulated pacing (~1.8s) blended with real asset progress
-      const simulated = Math.min(elapsed / 1.8, 1) * 100
-      const real = active ? assetProgress : 100
-      const target = Math.min(simulated, real)
+      // Simulated pacing (~1.8s), gated on the hero film being ready
+      const target = Math.min(elapsed / 1.8, 1) * 100
       setCounter((prev) => Math.max(prev, target))
       if (target >= 100 && sceneReady) {
         setDone(true)
@@ -29,7 +24,7 @@ export default function Loader({ sceneReady }) {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [assetProgress, active, sceneReady])
+  }, [sceneReady])
 
   useEffect(() => {
     if (done) {

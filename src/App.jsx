@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
-import Experience from './components/experience/Experience'
+import PhotoStage from './components/ui/PhotoStage'
 import Overlay from './components/ui/Overlay'
 import Nav from './components/ui/Nav'
 import ProgressRail from './components/ui/ProgressRail'
@@ -41,10 +41,10 @@ export default function App() {
 
   return (
     <>
-      <Experience isMobile={isMobile} onReady={() => setSceneReady(true)} />
+      <PhotoStage />
 
       {/* Act I — pinned cinematic film hero */}
-      <HeroCinematic />
+      <HeroCinematic onReady={() => setSceneReady(true)} />
 
       {/* Act II — the live 3D property tour (scroll distance) */}
       <div ref={trackRef} id="journey-track" className="scroll-track" style={{ height: `${SCROLL_LENGTH_VH}vh` }} />

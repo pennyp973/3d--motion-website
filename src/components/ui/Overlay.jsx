@@ -119,7 +119,7 @@ function Hero({ active }) {
       <div className="chapter-copy" style={{ maxWidth: 760 }}>
         <FadeIn active={active} delay={0.15}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.6rem' }}>
-            <span className="eyebrow" style={{ fontSize: '0.62rem' }}>Live Tour</span>
+            <span className="eyebrow" style={{ fontSize: '0.62rem' }}>The Property</span>
             <span style={{ width: 46, height: 1, background: 'var(--gold)', opacity: 0.6 }} />
             <span className="eyebrow" style={{ fontSize: '0.62rem', color: 'var(--ink-faint)' }}>A CRD Development</span>
           </div>
@@ -129,12 +129,12 @@ function Hero({ active }) {
           className="display-lg"
           active={active}
           delay={0.3}
-          lines={['Now walk the', 'property itself.']}
+          lines={['Every detail,', 'considered.']}
         />
         <FadeIn active={active} delay={0.85}>
           <p className="body-copy" style={{ marginTop: '1.6rem' }}>
-            Keep scrolling — through the entrance, the residences and up
-            to the roof.
+            Keep scrolling — what CRD builds, manages and grows, told
+            through the property itself.
           </p>
         </FadeIn>
       </div>

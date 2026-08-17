@@ -1,23 +1,23 @@
-# CRD Property Group — Immersive 3D Website
+# CRD Property Group — Cinematic Property Experience
 
-**The website is the property.** The experience opens with a pinned,
-scroll-scrubbed cinematic film of a CRD property (scroll drives the
-video's timeline forward and backward), layered with the brand system,
-staged typography, pointer-responsive perspective and a gold progress
-rail — then dissolves into the live WebGL tour below: the visitor walks through the opening entrance doors into the
-lobby, moves through a model residence to the glazing overlooking the
-city, rises up the rear facade past dimensional service signage, and
-lands on the rooftop terrace at the skyline for the closing call to
-action.
+**The property is the website.** A pinned, scroll-scrubbed cinematic
+film of a real CRD property opens the site — scroll drives the film
+forward and backward through exterior, approach, residences and the
+rooftop CRD reveal, with the brand system, staged typography,
+pointer-responsive perspective and a gold progress rail layered over
+it. The film then dissolves into the chapter journey: real photographic
+backdrops (stills from the same footage) crossfade with cinematic
+drift while the content chapters — About, Management, Properties,
+Investment, Services, Contact — play over them.
+
+No generated 3D geometry is used anywhere; every visual of the
+property is real CRD footage.
 
 ## Stack
 
 - **Vite + React 18**
-- **Three.js + React Three Fiber** — all architecture is real, procedurally
-  built 3D geometry (curtain-wall tower, podium, interiors, city, rooftop)
-- **@react-three/drei** — instancing helpers, environment lighting, adaptive DPR
-- **@react-three/postprocessing** — bloom, chromatic aberration, vignette
-- **GSAP + ScrollTrigger** — scroll → camera progress and scroll-to navigation
+- **GSAP + ScrollTrigger** — scroll → film time, chapter choreography,
+  journey-relative deep links
 - **Framer Motion** — typography reveals, cards, chart draw, menu, loader
 
 ## Run
@@ -31,19 +31,14 @@ npm run preview  # serve the production build
 
 ## Architecture
 
-- `src/journey/chapters.js` — the film script: camera spline, gaze spline,
-  chapter scroll ranges, nav targets and event timings (door opening,
-  facade assembly, signage moments).
-- `src/journey/journeyState.js` — shared mutable scroll/pointer state read
-  by the render loop, GSAP and the DOM overlay without React re-renders.
-- `src/components/experience/` — the stage: `Building` (tower, podium,
-  entrance, sliding doors, extruded CRD signage), `Interior` (lobby,
-  corridor, residence), `City` (sky shader, towers, window-light points),
-  `Landscape`, `Rooftop`, `ServicesSignage`, `CameraRig`, `Lighting`,
-  `Particles`, `Effects` — materials shared from `materials.js`,
-  repetition instanced.
-- `src/components/ui/` — fixed overlay chapters that crossfade in place
-  (no empty scroll voids), inline nav, progress rail, loader, cursor.
+- `src/components/ui/HeroCinematic.jsx` — the scroll-scrubbed film hero
+  (scrub smoothing, staged typography, parallax, progress rail,
+  hand-off fade). Video variants live in `public/video/` (1080p + 720p,
+  H.264 keyframe-dense + VP9 fallbacks, poster).
+- `src/components/ui/PhotoStage.jsx` — photographic chapter backdrops
+  (`public/img/chapters/`, swap any file to change a backdrop).
+- `src/components/ui/Overlay.jsx` — the chapter content system.
+- `src/journey/chapters.js` — chapter ranges, nav targets, timings.
 
-Mobile keeps the full journey with a lighter scene: no shadows or
-post-processing, fewer particles, wider FOV, text scrims for legibility.
+Responsive (mobile picks the 720p film), reduced-motion aware, and
+fully static — deployable on Netlify as-is (`netlify.toml` included).

@@ -44,7 +44,7 @@ function stageOpacity(t, [a, b], feather = 0.05) {
   return Math.min(fadeIn, fadeOut)
 }
 
-export default function HeroCinematic() {
+export default function HeroCinematic({ onReady }) {
   const sectionRef = useRef()
   const stickyRef = useRef()
   const frameRef = useRef()
@@ -99,9 +99,12 @@ export default function HeroCinematic() {
     const fine = window.matchMedia('(pointer: fine)').matches
     if (fine) window.addEventListener('pointermove', onMove)
 
-    const onLoaded = () => setReady(true)
+    const onLoaded = () => {
+      setReady(true)
+      onReady?.()
+    }
     video.addEventListener('loadeddata', onLoaded)
-    if (video.readyState >= 2) setReady(true)
+    if (video.readyState >= 2) onLoaded()
 
     const tick = (now) => {
       const dt = Math.min((now - last) / 1000, 0.6)
@@ -144,10 +147,6 @@ export default function HeroCinematic() {
       railDots.current.forEach((el, i) => {
         if (el) el.style.color = t >= STAGES[i].range[0] - 0.02 ? 'var(--gold)' : 'rgba(242,239,233,0.28)'
       })
-
-      // 3D stage stays hidden (still warming up) until the hand-off
-      const stage = document.querySelector('.stage')
-      if (stage) stage.style.visibility = t > 0.9 ? 'visible' : 'hidden'
 
       // hand-off: the film dissolves into the live 3D tour
       if (stickyRef.current) {

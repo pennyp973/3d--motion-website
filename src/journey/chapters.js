@@ -1,61 +1,8 @@
-// The CRD property journey. Scroll progress (0 → 1) drives the camera
-// along CAMERA_PATH while it gazes along LOOK_PATH. Chapters own ranges
-// of progress space; the overlay crossfades between them.
-//
-// World layout:
-//   Building: front facade at z = 0, rear facade at z = -28,
-//   width x ±17, podium 0–4.6, tower to y ≈ 27.5, roof terrace on top.
-//   Interior (ground floor): lobby z 0…-13, corridor -13…-16,
-//   residence -16…-28 with full glazing at the rear.
-//   City skyline: z -70…-160. Sunset glow to the north (-z).
+// The CRD chapter journey that follows the cinematic film hero.
+// Scroll progress (0 → 1) crossfades photographic backdrops (real CRD
+// footage) while the overlay chapters carry the content.
 
 export const SCROLL_LENGTH_VH = 950
-
-export const CAMERA_PATH = [
-  // Hero — elevated 3/4 architectural angle, slow push toward the property
-  [28.5, 14.5, 40.5],
-  [17, 9, 28],
-  // Descent while the facade assembles
-  [6.5, 5, 20],
-  // Approach the entrance on axis
-  [0, 2.6, 11],
-  // Through the opening doors
-  [0, 2.4, 0.5],
-  // Lobby
-  [1.6, 2.3, -7],
-  // Corridor
-  [-0.8, 2.3, -14],
-  // Residence
-  [1.8, 2.4, -21],
-  // At the rear glazing, city beyond
-  [0, 2.6, -26.5],
-  // Out through the glass, rising along the rear facade
-  [0, 6, -34],
-  [0, 16, -37],
-  // Crest over the parapet
-  [0, 30, -34],
-  // Settle above the roof terrace, skyline beyond
-  [10, 33.5, -9],
-]
-
-export const LOOK_PATH = [
-  [-1, 10.5, -6],
-  [-0.5, 8, -3],
-  [0, 5, 0],
-  [0, 3.0, 0],
-  [0, 2.5, -8],
-  [-1.2, 2.2, -13],
-  [0.8, 2.3, -20],
-  [-4.5, 1.9, -22.5],
-  // Gaze out to the city through the glazing
-  [0, 5, -45],
-  // Turn back to the rear facade for the services sequence
-  [0, 7, -42],
-  [0, 19, -28.5],
-  // Sweep over the roof
-  [0, 26, -24],
-  [-2, 27, -24],
-]
 
 export const CHAPTERS = [
   { id: 'hero',       label: 'CRD',                 range: [0.0, 0.085],  center: 0.02 },
@@ -78,14 +25,6 @@ export const NAV_LINKS = [
 
 // Key event timings in progress space
 export const TIMINGS = {
-  // exterior comes alive during the opening
-  awaken: [0.0, 0.13],
-  // facade elements assemble while descending
-  assemble: [0.1, 0.26],
-  // entrance doors slide open
-  doors: [0.27, 0.33],
-  // interior lights pre-warm as we approach
-  interior: [0.25, 0.4],
-  // services signage sub-moments (camera y sweep on the rear facade)
+  // services caption sub-moments within the services chapter
   services: [0.845, 0.875, 0.905],
 }
