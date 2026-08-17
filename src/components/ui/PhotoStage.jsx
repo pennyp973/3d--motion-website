@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { CHAPTERS } from '../../journey/chapters'
 import { journey, damp } from '../../journey/journeyState'
 import { useRafLoop } from '../../hooks/useRafLoop'
 
@@ -15,20 +14,23 @@ import { useRafLoop } from '../../hooks/useRafLoop'
 // in /public/img/chapters/ (1920×1080, JPG).
 // ————————————————————————————————————————————————————————————————
 
+// Each backdrop holds the frame from its boundary until the next one.
+// The services chapter cycles three rooms in step with its rotating
+// captions (boundaries match the caption thresholds in Overlay).
 const BACKDROPS = [
-  { id: 'hero', src: '/img/chapters/ch-exterior.jpg' },
-  { id: 'approach', src: '/img/chapters/ch-approach.jpg' },
-  { id: 'enter', src: '/img/chapters/ch-entry.jpg' },
-  { id: 'management', src: '/img/chapters/ch-kitchen.jpg' },
-  { id: 'realestate', src: '/img/chapters/ch-living.jpg' },
-  { id: 'investment', src: '/img/chapters/ch-plaque.jpg' },
-  { id: 'services', src: '/img/chapters/ch-terrace.jpg' },
-  { id: 'contact', src: '/img/chapters/ch-skyline.jpg' },
+  { id: 'hero', src: '/img/chapters/ch-exterior.jpg', from: 0 },
+  { id: 'approach', src: '/img/chapters/ch-approach.jpg', from: 0.075 },
+  { id: 'enter', src: '/img/chapters/ch-entry.jpg', from: 0.26 },
+  { id: 'management', src: '/img/chapters/ch-kitchen.jpg', from: 0.385 },
+  { id: 'realestate', src: '/img/chapters/ch-living.jpg', from: 0.565 },
+  { id: 'investment', src: '/img/chapters/ch-plaque.jpg', from: 0.68 },
+  { id: 'services-re', src: '/img/chapters/ch-bedroom.jpg', from: 0.835 },
+  { id: 'services-pm', src: '/img/chapters/ch-bathroom.jpg', from: 0.86 },
+  { id: 'services-inv', src: '/img/chapters/ch-garage.jpg', from: 0.89 },
+  { id: 'contact', src: '/img/chapters/ch-skyline.jpg', from: 0.94 },
 ]
 
-// Chapter boundaries in journey-progress space; backdrop i holds the
-// frame from its boundary until the next chapter's boundary.
-const BOUNDS = CHAPTERS.map((c) => c.range[0])
+const BOUNDS = BACKDROPS.map((b) => b.from)
 
 function edge(t, b, f = 0.028) {
   return Math.min(Math.max((t - (b - f)) / (2 * f), 0), 1)
