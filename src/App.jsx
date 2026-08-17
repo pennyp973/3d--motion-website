@@ -46,7 +46,7 @@ export default function App() {
       {/* Act I — pinned cinematic film hero */}
       <HeroCinematic onReady={() => setSceneReady(true)} />
 
-      {/* Act II — the live 3D property tour (scroll distance) */}
+      {/* Act II — the photographic chapter journey (scroll distance) */}
       <div ref={trackRef} id="journey-track" className="scroll-track" style={{ height: `${SCROLL_LENGTH_VH}vh` }} />
 
       <Overlay />

@@ -18,8 +18,8 @@ export const CHAPTERS = [
 export const NAV_LINKS = [
   { label: 'Properties', target: 0.62 },
   { label: 'Management', target: 0.465 },
-  { label: 'Invest', target: 0.755 },
-  { label: 'About', target: 0.175 },
+  { label: 'Invest', target: 0.75 },
+  { label: 'About', target: 0.16 },
   { label: 'Contact', target: 0.98 },
 ]
 
