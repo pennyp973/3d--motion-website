@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import PhotoStage from './components/ui/PhotoStage'
 import Overlay from './components/ui/Overlay'
+import EditorialSlides from './components/ui/EditorialSlides'
 import Nav from './components/ui/Nav'
 import ProgressRail from './components/ui/ProgressRail'
 import Cursor from './components/ui/Cursor'
@@ -46,10 +47,17 @@ export default function App() {
       {/* Act I — pinned cinematic film hero */}
       <HeroCinematic onReady={() => setSceneReady(true)} />
 
-      {/* Act II — the photographic chapter journey (scroll distance) */}
-      <div ref={trackRef} id="journey-track" className="scroll-track" style={{ height: `${SCROLL_LENGTH_VH}vh` }} />
+      {/* Act II — extended chapter journey. More distance makes the experience
+          feel deliberate instead of rushing between scenes. */}
+      <div
+        ref={trackRef}
+        id="journey-track"
+        className="scroll-track"
+        style={{ height: `${SCROLL_LENGTH_VH}vh` }}
+      />
 
       <Overlay />
+      <EditorialSlides />
       <Nav />
       {!isMobile && <ProgressRail />}
       <Cursor />
