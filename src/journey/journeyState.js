@@ -13,6 +13,8 @@ export const journey = {
   smoothMouse: { x: 0, y: 0 },
   // Set true once the loader has finished its reveal
   ready: false,
+  // Progress of the cinematic film hero that precedes the tour
+  heroProgress: 0,
 }
 
 export function damp(current, target, lambda, delta) {

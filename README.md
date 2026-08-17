@@ -1,6 +1,11 @@
 # CRD Property Group — Immersive 3D Website
 
-**The website is the property.** A cinematic, scroll-driven tour of a
+**The website is the property.** The experience opens with a pinned,
+scroll-scrubbed cinematic film of a CRD property (scroll drives the
+video's timeline forward and backward), layered with the brand system,
+staged typography, pointer-responsive perspective and a gold progress
+rail — then dissolves into the live WebGL tour below.
+ A cinematic, scroll-driven tour of a
 CRD development, rendered live in Three.js: the visitor arrives on an
 aerial view of a luxury condominium at dusk, descends past the
 assembling facade, walks through the opening entrance doors into the

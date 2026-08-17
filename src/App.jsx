@@ -8,11 +8,15 @@ import Nav from './components/ui/Nav'
 import ProgressRail from './components/ui/ProgressRail'
 import Cursor from './components/ui/Cursor'
 import Loader from './components/ui/Loader'
+import HeroCinematic from './components/ui/HeroCinematic'
 import { journey } from './journey/journeyState'
 import { SCROLL_LENGTH_VH } from './journey/chapters'
 import { useIsMobile } from './hooks/useIsMobile'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin)
+// Scroll-scrubbed site: tween time must track real time even under
+// frame jank, or scroll-synced motion desynchronizes.
+gsap.ticker.lagSmoothing(0)
 
 export default function App() {
   const trackRef = useRef()
@@ -39,8 +43,11 @@ export default function App() {
     <>
       <Experience isMobile={isMobile} onReady={() => setSceneReady(true)} />
 
-      {/* invisible scroll distance — the film strip */}
-      <div ref={trackRef} className="scroll-track" style={{ height: `${SCROLL_LENGTH_VH}vh` }} />
+      {/* Act I — pinned cinematic film hero */}
+      <HeroCinematic />
+
+      {/* Act II — the live 3D property tour (scroll distance) */}
+      <div ref={trackRef} id="journey-track" className="scroll-track" style={{ height: `${SCROLL_LENGTH_VH}vh` }} />
 
       <Overlay />
       <Nav />

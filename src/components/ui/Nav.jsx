@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
 import { NAV_LINKS } from '../../journey/chapters'
+import { scrollToJourney } from '../../journey/scrollTo'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
 // Minimal corporate nav: wordmark left, section links right.
@@ -12,12 +13,7 @@ export default function Nav() {
 
   const goTo = (target) => {
     setOpen(false)
-    const max = document.documentElement.scrollHeight - window.innerHeight
-    gsap.to(window, {
-      scrollTo: { y: target * max },
-      duration: 2.4,
-      ease: 'power2.inOut',
-    })
+    scrollToJourney(target)
   }
 
   return (
@@ -37,7 +33,7 @@ export default function Nav() {
         }}
       >
         <motion.button
-          onClick={() => goTo(0)}
+          onClick={() => gsap.to(window, { scrollTo: { y: 0 }, duration: 2, ease: 'power2.inOut' })}
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.6, duration: 1.1 }}

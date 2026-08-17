@@ -5,6 +5,7 @@ import { CHAPTERS, TIMINGS } from '../../journey/chapters'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { journey } from '../../journey/journeyState'
 import RevealText, { FadeIn } from './RevealText'
+import { scrollToJourney } from '../../journey/scrollTo'
 
 // Every chapter is a fixed full-screen layer over the 3D stage.
 // Layers crossfade as the camera travels — content never stacks
@@ -23,11 +24,13 @@ export default function Overlay() {
 
   useRafLoop(() => {
     const t = journey.smooth
+    // the film hero owns the screen until it completes
+    const heroGate = gsap.utils.clamp(0, 1, (journey.heroProgress - 0.93) / 0.05)
     let current = null
     CHAPTERS.forEach((ch, i) => {
       const el = refs.current[i]
       if (!el) return
-      const o = journey.ready ? sectionOpacity(t, ch.range) : 0
+      const o = (journey.ready ? sectionOpacity(t, ch.range) : 0) * heroGate
       const drift = (t - ch.center) * 90
       el.style.opacity = o.toFixed(3)
       el.style.transform = `translate3d(0, ${(-drift).toFixed(1)}px, 0)`
@@ -98,12 +101,9 @@ function Mark({ index, label, active }) {
   )
 }
 
-function scrollToProgress(p) {
-  const max = document.documentElement.scrollHeight - window.innerHeight
-  gsap.to(window, { scrollTo: { y: p * max }, duration: 2.4, ease: 'power2.inOut' })
-}
 
-/* — 01 · HERO — */
+
+/* — 01 · HERO (transition out of the film into the live tour) — */
 function Hero({ active }) {
   return (
     <div
@@ -113,66 +113,31 @@ function Hero({ active }) {
         flexDirection: 'column',
         justifyContent: 'flex-end',
         padding: pad,
-        paddingBottom: 'clamp(6.5rem, 12vh, 9rem)',
+        paddingBottom: 'clamp(5rem, 12vh, 9rem)',
       }}
     >
-      <div className="chapter-copy" style={{ maxWidth: 980 }}>
-        <FadeIn active={active} delay={0.2}>
-          <div className="eyebrow" style={{ marginBottom: '1.9rem' }}>
-            Boston · Massachusetts
+      <div className="chapter-copy" style={{ maxWidth: 760 }}>
+        <FadeIn active={active} delay={0.15}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.6rem' }}>
+            <span className="eyebrow" style={{ fontSize: '0.62rem' }}>Live Tour</span>
+            <span style={{ width: 46, height: 1, background: 'var(--gold)', opacity: 0.6 }} />
+            <span className="eyebrow" style={{ fontSize: '0.62rem', color: 'var(--ink-faint)' }}>A CRD Development</span>
           </div>
         </FadeIn>
         <RevealText
-          as="h1"
-          className="display-hero"
+          as="h2"
+          className="display-lg"
           active={active}
-          delay={0.4}
-          stagger={0.16}
-          lines={['CRD Property', 'Group']}
+          delay={0.3}
+          lines={['Now walk the', 'property itself.']}
         />
-        <FadeIn active={active} delay={1.05}>
-          <p
-            style={{
-              marginTop: '2rem',
-              fontFamily: 'var(--font-body)',
-              fontWeight: 400,
-              fontSize: 'clamp(0.72rem, 1vw, 0.85rem)',
-              letterSpacing: '0.5em',
-              textTransform: 'uppercase',
-              color: 'var(--ink-dim)',
-            }}
-          >
-            Real Estate&nbsp;·&nbsp;Property Management&nbsp;·&nbsp;Investment
+        <FadeIn active={active} delay={0.85}>
+          <p className="body-copy" style={{ marginTop: '1.6rem' }}>
+            Keep scrolling — through the entrance, the residences and up
+            to the roof.
           </p>
         </FadeIn>
-        <FadeIn active={active} delay={1.35}>
-          <div style={{ marginTop: '2.8rem', pointerEvents: 'auto' }}>
-            <button className="btn" onClick={() => scrollToProgress(0.175)}>
-              Explore CRD
-            </button>
-          </div>
-        </FadeIn>
       </div>
-
-      <FadeIn
-        active={active}
-        delay={1.7}
-        style={{ position: 'absolute', bottom: '2rem', left: 0, right: 0 }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.8rem' }}>
-          <span className="eyebrow" style={{ fontSize: '0.55rem', color: 'var(--ink-faint)' }}>
-            Scroll to begin the tour
-          </span>
-          <span
-            style={{
-              width: 1,
-              height: 44,
-              background: 'linear-gradient(to bottom, var(--gold), transparent)',
-              display: 'block',
-            }}
-          />
-        </div>
-      </FadeIn>
     </div>
   )
 }

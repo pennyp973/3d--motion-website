@@ -4,14 +4,21 @@ import { gsap } from 'gsap'
 import { journey } from '../../journey/journeyState'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { CHAPTERS } from '../../journey/chapters'
+import { scrollToJourney } from '../../journey/scrollTo'
 
 // Hairline progress rail on the right edge with chapter markers.
 export default function ProgressRail() {
+  const rootRef = useRef()
   const fillRef = useRef()
   const dotRefs = useRef([])
 
   useRafLoop(() => {
     const t = journey.smooth
+    const heroGate = journey.heroProgress > 0.96 ? 1 : 0
+    if (rootRef.current) {
+      rootRef.current.style.opacity = heroGate
+      rootRef.current.style.pointerEvents = heroGate ? 'auto' : 'none'
+    }
     if (fillRef.current) {
       fillRef.current.style.transform = `scaleY(${t})`
     }
@@ -23,13 +30,11 @@ export default function ProgressRail() {
     })
   })
 
-  const goTo = (center) => {
-    const max = document.documentElement.scrollHeight - window.innerHeight
-    gsap.to(window, { scrollTo: { y: center * max }, duration: 2, ease: 'power2.inOut' })
-  }
+  const goTo = (center) => scrollToJourney(center, 2)
 
   return (
     <motion.div
+      ref={rootRef}
       initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 3.4, duration: 1.4 }}
