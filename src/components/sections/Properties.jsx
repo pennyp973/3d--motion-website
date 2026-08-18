@@ -23,9 +23,9 @@ export default function Properties() {
           <Headline lines={['A look inside', 'CRD residences.']} />
           <Rise delay={0.16} className="properties-intro">
             <p className="body-copy">
-              Residences and multi-family assets across the Northeast —
-              built, renovated and managed with the same attention
-              throughout.
+              Residences and multi-family assets across Boston and the
+              Massachusetts North Shore — bought, sold and held with the
+              same attention throughout.
             </p>
           </Rise>
         </div>

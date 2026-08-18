@@ -86,6 +86,24 @@ fast-start MP4, reasonable bitrate for its resolution, a poster image,
 and — if it's a background/loop video — dense keyframes if you ever do
 need to scrub it (this site currently scrubs nothing).
 
+## Who this is
+
+CRD Property Group is **Cristal Rijo, REALTOR®** — real estate agent
+and investor, serving buyers, sellers and investors across Boston and
+the Massachusetts North Shore, with Spanish-speaking services.
+
+Contact details are real and live in three places — keep them in sync:
+
+- `sections/Contact.jsx` — the constants at the top of the file
+  (`PHONE_DISPLAY`, `PHONE_HREF`, `EMAIL`, `INSTAGRAM`) plus the office
+  address in the `contact-details` list and the footer block below it.
+- `index.html` — the meta description, `og:` tags, and the
+  `RealEstateAgent` JSON-LD block (phone, email, postal address,
+  `areaServed`, `sameAs`).
+
+Direct/mobile `(781) 257-4696` · `cristalrijore@gmail.com` ·
+20C Del Carmine Street, Wakefield, MA 01880 · `@cristalrijorealty`.
+
 ## Content rule: the Investment section
 
 This is a hard constraint, not a style preference. The Investment
@@ -174,10 +192,15 @@ before calling this "verified" for production traffic.
   Netlify dashboard (Import from Git) — `netlify.toml` is already set
   up for that (`npm run build`, publish `dist`, immutable caching on
   `/video/*` and `/img/*`).
-- **Contact details are placeholders**: `hello@crdpropertygroup.com`,
-  `partners@crdpropertygroup.com`, `+1 (617) 555-0148` in
-  `Contact.jsx` are not verified as real. Replace with the client's
-  actual contact info before launch.
+- **Service list vs. site structure**: the client's own service list is
+  "Buyers • Sellers • Real Estate Investment" — it does **not** include
+  property management, yet the site still carries a full Property
+  Management section (`03`) and the brand line reads "Real Estate ·
+  Property Management · Investment" in places. That section was
+  specified by an earlier brief and has been left in place rather than
+  removed unilaterally. Confirm with the client whether CRD actually
+  offers management; if not, delete `sections/Management.jsx`, its nav
+  and footer links, and renumber sections 04/05.
 - **Hero is aspirational, not a listing**: the brief that shaped this
   section was explicit that the drone footage should not be presented
   as a specific active CRD listing unless the client says otherwise.

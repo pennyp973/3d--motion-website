@@ -1158,6 +1158,97 @@ section[id] {
   margin-top: clamp(2rem, 4.5vh, 3rem);
 }
 
+/* ---- The agent behind the brand ---- */
+
+.agent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: clamp(2.4rem, 5vh, 3.4rem);
+  padding-top: clamp(2rem, 4vh, 2.8rem);
+  border-top: 1px solid rgba(194, 160, 97, 0.28);
+}
+
+.agent-name {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 2.4vw, 1.95rem);
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+
+.agent-mark {
+  font-style: italic;
+  color: var(--gold-bright);
+}
+
+.agent-role {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (max-width: 560px) {
+  .agent-role {
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    line-height: 1.8;
+  }
+}
+
+/* ---- Direct / Email / Office / Instagram ---- */
+
+.contact-details {
+  display: grid;
+  grid-template-columns: repeat(4, auto);
+  justify-content: center;
+  gap: clamp(1.4rem, 4vw, 3.4rem);
+  margin-top: clamp(2.2rem, 4.5vh, 3rem);
+  text-align: left;
+}
+
+.contact-details dt {
+  font-family: var(--font-body);
+  font-size: 0.54rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 0.5rem;
+}
+
+.contact-details dd {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.6;
+  letter-spacing: 0.025em;
+  color: var(--ink-soft);
+}
+
+.contact-details a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 0.45s var(--ease), border-color 0.45s var(--ease);
+}
+
+.contact-details a:hover {
+  color: var(--gold-bright);
+  border-bottom-color: rgba(194, 160, 97, 0.5);
+}
+
+.footer-agent {
+  color: var(--ink) !important;
+  font-weight: 400 !important;
+}
+
 /* ═══════════════ FOOTER ═══════════════ */
 
 .footer {
@@ -1351,6 +1442,12 @@ html.custom-cursor button {
     gap: 0.5rem;
   }
 
+  .contact-details {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.4rem 1.2rem;
+    width: 100%;
+  }
+
   .sec-head {
     gap: 0.8rem;
   }
@@ -1382,6 +1479,11 @@ html.custom-cursor button {
 
   .gallery {
     gap: 0.5rem;
+  }
+
+  .contact-details {
+    grid-template-columns: 1fr;
+    text-align: center;
   }
 }
 

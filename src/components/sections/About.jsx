@@ -1,7 +1,7 @@
 import { SectionHead, Headline, Rise } from '../ui/Primitives'
 
 const DISCIPLINES = [
-  ['Real Estate', 'Acquisition, sales and advisory across the Northeast.'],
+  ['Buyers & Sellers', 'Representation across Boston and the North Shore.'],
   ['Management', 'Full-service operations for owners who expect performance.'],
   ['Investment', 'Ownership-minded capital and long-horizon strategy.'],
 ]
