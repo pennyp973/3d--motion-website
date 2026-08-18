@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { scrollToJourney } from '../../journey/scrollTo'
+import { roomTarget } from '../../journey/rooms'
+import { useMagnetic } from '../../hooks/useMagnetic'
 import { journey } from '../../journey/journeyState'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -16,14 +18,26 @@ gsap.registerPlugin(ScrollTrigger)
 // gold dimensional accents, staged typography, a progress rail, and
 // a crossfade hand-off into the WebGL property tour that follows.
 //
-// Sequence map (matches the cut):
-//   0.00  exterior opening      → brand block
-//   0.30  approach              → caption
-//   0.55  interior residences   → caption
-//   0.90  rooftop CRD reveal    → transition cue into the 3D tour
+// The film is the ARRIVAL. It plays only as far as the front doors
+// finishing their swing — CLIP_END — and hands the visitor straight
+// through the threshold to the foyer, where the room journey takes
+// over. Nothing in the footage is shown twice: the kitchen, the
+// hardware and the terrace beyond this point become rooms you travel
+// through later, held far longer and with their own camera moves.
+//
+// Sequence map (of the clipped arrival):
+//   0.00  the house at dusk     → brand block
+//   0.38  the approach          → caption
+//   0.74  doors opening         → threshold cue, hand-off inside
 // ————————————————————————————————————————————————————————————————
 
-const SCROLL_VH = 420 // scroll distance that plays the film once
+// Long enough that the arrival is savoured rather than skipped past.
+const SCROLL_VH = 560
+
+// Where the arrival ends in the source film (fraction of duration):
+// the moment the front doors have fully opened on the lit hall.
+// Raise toward 1 to play more of the film in the hero.
+const CLIP_END = 0.36
 
 const SOURCES = {
   desktop: { mp4: '/video/crd-hero-1080.mp4', webm: '/video/crd-hero-1080.webm' },
@@ -32,11 +46,21 @@ const SOURCES = {
 }
 
 const STAGES = [
-  { id: 'brand', range: [0.0, 0.2] },
-  { id: 'approach', range: [0.28, 0.5], eyebrow: 'The Property', line: 'A Northeast address, crafted to endure.' },
-  { id: 'residence', range: [0.55, 0.8], eyebrow: 'The Residences', line: 'Interiors that live beautifully — and perform.' },
-  { id: 'reveal', range: [0.875, 1.0] },
+  { id: 'brand', range: [0.0, 0.3] },
+  { id: 'approach', range: [0.38, 0.66], eyebrow: 'The Property', line: 'A Northeast address, crafted to endure.' },
+  { id: 'reveal', range: [0.76, 1.0] },
 ]
+
+const RAIL = ['Arrival', 'Approach', 'Threshold']
+
+function HeroButton({ children, onClick, solid }) {
+  const ref = useMagnetic()
+  return (
+    <button ref={ref} className={`btn${solid ? ' btn--solid' : ''}`} onClick={onClick}>
+      {children}
+    </button>
+  )
+}
 
 function stageOpacity(t, [a, b], feather = 0.05) {
   const fadeIn = a <= 0 ? 1 : Math.min(Math.max((t - a) / feather, 0), 1)
@@ -111,13 +135,15 @@ export default function HeroCinematic({ onReady }) {
       last = now
 
       // weighted scrub — the film has inertia, never jitter
-      shown = shown < 0 ? target : shown + (target - shown) * (1 - Math.exp(-7 * dt))
+      // a slower lambda than a normal scrubber: the film has weight
+      shown = shown < 0 ? target : shown + (target - shown) * (1 - Math.exp(-4.6 * dt))
       const t = Math.min(Math.max(shown, 0), 1)
       journey.heroProgress = t
 
       // scroll → film time
-      if (video.duration && Math.abs(video.currentTime - t * (video.duration - 0.06)) > 0.016) {
-        video.currentTime = t * (video.duration - 0.06)
+      if (video.duration) {
+        const want = t * (video.duration * CLIP_END)
+        if (Math.abs(video.currentTime - want) > 0.016) video.currentTime = want
       }
 
       // pointer-responsive perspective (skipped for reduced motion)
@@ -150,7 +176,7 @@ export default function HeroCinematic({ onReady }) {
 
       // hand-off: the film dissolves into the live 3D tour
       if (stickyRef.current) {
-        const fade = t < 0.955 ? 1 : 1 - (t - 0.955) / 0.045
+        const fade = t < 0.93 ? 1 : 1 - (t - 0.93) / 0.05
         stickyRef.current.style.opacity = Math.max(fade, 0).toFixed(3)
       }
 
@@ -238,12 +264,12 @@ export default function HeroCinematic({ onReady }) {
               Real Estate&nbsp;·&nbsp;Property Management&nbsp;·&nbsp;Investment
             </motion.p>
             <motion.div {...entrance(1.3)} style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '2.4rem', pointerEvents: 'auto' }}>
-              <button className="btn btn--solid" onClick={() => scrollToJourney(0.62, 3)}>
-                View Properties
-              </button>
-              <button className="btn" onClick={() => scrollToJourney(0.98, 3.4)}>
-                Work with CRD
-              </button>
+              <HeroButton solid onClick={() => scrollToJourney(roomTarget('foyer'), 3.4)}>
+                Enter the Residence
+              </HeroButton>
+              <HeroButton onClick={() => scrollToJourney(roomTarget('finale'), 4)}>
+                Schedule a Private Tour
+              </HeroButton>
             </motion.div>
           </div>
           <motion.div {...entrance(1.6)} style={{ position: 'absolute', bottom: '1.8rem', left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.7rem' }}>
@@ -272,9 +298,9 @@ export default function HeroCinematic({ onReady }) {
           ref={(el) => (stageRefs.current.reveal = el)}
           style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 'clamp(3rem, 9vh, 6rem)', opacity: 0, visibility: 'hidden', pointerEvents: 'none', textAlign: 'center' }}
         >
-          <div className="eyebrow" style={{ marginBottom: '0.9rem' }}>Property · Elevated</div>
+          <div className="eyebrow" style={{ marginBottom: '0.9rem' }}>The Threshold</div>
           <div className="serif-italic" style={{ fontSize: 'clamp(1.3rem, 2.4vw, 2rem)', color: 'var(--ink)' }}>
-            Now step inside a CRD development.
+            Step inside.
           </div>
           <span style={{ width: 1, height: 38, marginTop: '1.4rem', background: 'linear-gradient(to bottom, var(--gold), transparent)' }} />
         </div>
@@ -282,7 +308,7 @@ export default function HeroCinematic({ onReady }) {
         {/* ——— progress rail ——— */}
         <div style={{ position: 'absolute', right: 'clamp(1.2rem, 2.5vw, 2.4rem)', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.15rem', alignItems: 'flex-end' }}>
-            {['Exterior', 'Approach', 'Residences', 'Skyline'].map((label, i) => (
+            {RAIL.map((label, i) => (
               <span
                 key={label}
                 ref={(el) => (railDots.current[i] = el)}

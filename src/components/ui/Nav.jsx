@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { gsap } from 'gsap'
-import { NAV_LINKS } from '../../journey/chapters'
-import { scrollToJourney } from '../../journey/scrollTo'
+import { NAV_LINKS, roomTarget } from '../../journey/rooms'
+import { scrollToJourney, scrollToAnchor } from '../../journey/scrollTo'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
 // Minimal corporate nav: wordmark left, section links right.
@@ -11,9 +11,10 @@ export default function Nav() {
   const [open, setOpen] = useState(false)
   const isMobile = useIsMobile()
 
-  const goTo = (target) => {
+  const goTo = (link) => {
     setOpen(false)
-    scrollToJourney(target)
+    if (link.anchor) scrollToAnchor(link.anchor, 2.4)
+    else scrollToJourney(roomTarget(link.roomId), 2.6)
   }
 
   return (
@@ -80,7 +81,7 @@ export default function Nav() {
             style={{ display: 'flex', gap: 'clamp(1.2rem, 2.6vw, 2.6rem)', alignItems: 'center' }}
           >
             {NAV_LINKS.map((l) => (
-              <button key={l.label} className="nav-link" onClick={() => goTo(l.target)}>
+              <button key={l.label} className="nav-link" onClick={() => goTo(l)}>
                 {l.label}
               </button>
             ))}
@@ -139,7 +140,7 @@ export default function Nav() {
             {NAV_LINKS.map((l, i) => (
               <motion.button
                 key={l.label}
-                onClick={() => goTo(l.target)}
+                onClick={() => goTo(l)}
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}

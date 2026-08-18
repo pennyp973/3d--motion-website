@@ -1,24 +1,34 @@
 # CRD Property Group — Cinematic Property Experience
 
-**The property is the website.** A pinned, scroll-scrubbed cinematic
-film of a real CRD property opens the site — scroll drives the film
-forward and backward through exterior, approach, residences and the
-rooftop CRD reveal, with the brand system, staged typography,
-pointer-responsive perspective and a gold progress rail layered over
-it. The film then dissolves into the chapter journey: real photographic
-backdrops (stills from the same footage) crossfade with cinematic
-drift while the content chapters — About, Management, Properties,
-Investment, Services, Contact — play over them.
+**One house, one camera, one journey.** The site is a continuous
+architectural walkthrough in four acts, built entirely from real CRD
+footage and photography. No generated 3D geometry anywhere.
 
-No generated 3D geometry is used anywhere; every visual of the
-property is real CRD footage.
+**Act I — Arrival.** A pinned, scroll-scrubbed film of the house at
+dusk. Scroll drives the footage forward and backward and stops exactly
+as the front doors finish opening, handing the visitor across the
+threshold.
+
+**Act II — The Residence.** Eleven rooms, each with its own camera
+dolly, its own kind of threshold, and its own story. Foyer, great
+room, kitchen, island, dining, primary suite, primary bath, the
+bronze hardware, garage, terrace, and a summary of the property in
+full. Business chapters (management, real estate, investment) are
+spoken from the room they belong to.
+
+**Act III — Build With Us.** The camera leaves the finished house and
+lands on open ground at sunrise, where scrolling raises a building out
+of it — slab, structure, envelope, delivery — with four clickable
+stages and a completion meter.
+
+**Act IV — The Invitation.** The camera comes to rest in front of the
+house at dusk, where it began.
 
 ## Stack
 
 - **Vite + React 18**
-- **GSAP + ScrollTrigger** — scroll → film time, chapter choreography,
-  journey-relative deep links
-- **Framer Motion** — typography reveals, cards, chart draw, menu, loader
+- **GSAP + ScrollTrigger** — scroll → film time, room windows, deep links
+- **Framer Motion** — typography reveals, cards, chart, menu, loader
 
 ## Run
 
@@ -31,14 +41,20 @@ npm run preview  # serve the production build
 
 ## Architecture
 
-- `src/components/ui/HeroCinematic.jsx` — the scroll-scrubbed film hero
-  (scrub smoothing, staged typography, parallax, progress rail,
-  hand-off fade). Video variants live in `public/video/` (1080p + 720p,
-  H.264 keyframe-dense + VP9 fallbacks, poster).
-- `src/components/ui/PhotoStage.jsx` — photographic chapter backdrops
-  (`public/img/chapters/`, swap any file to change a backdrop).
-- `src/components/ui/Overlay.jsx` — the chapter content system.
-- `src/journey/chapters.js` — chapter ranges, nav targets, timings.
+- `src/journey/rooms.js` — **the script.** Room order, camera moves,
+  threshold kinds, copy, facts, scroll weights, nav targets. Almost
+  every creative change to the tour is a change to this one file.
+- `src/components/rooms/RoomStage.jsx` — the camera: per-room dolly,
+  doorway transitions, depth layers, bloom, parallax.
+- `src/components/rooms/RoomInfo.jsx` — progressive room details.
+- `src/components/rooms/RoomNavigator.jsx` — where you are in the house.
+- `src/components/ui/HeroCinematic.jsx` — the arrival film.
+- `src/components/build/BuildWithUs.jsx` — the construction sequence.
+- `src/components/closing/ClosingSection.jsx` — the invitation.
+- `src/components/ui/Overlay.jsx` — business chapters, anchored to rooms.
 
-Responsive (mobile picks the 720p film), reduced-motion aware, and
-fully static — deployable on Netlify as-is (`netlify.toml` included).
+Media lives in `public/video/` (two scrub-optimised films, 1080p +
+720p, H.264 + VP9) and `public/img/chapters/` (1920×1080 JPGs — swap a
+file to change a room's photograph).
+
+Responsive, reduced-motion aware, fully static, Netlify-ready.

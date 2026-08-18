@@ -310,3 +310,887 @@ html.custom-cursor button {
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   THE RESIDENCE — camera stage, room interface, micro-interactions
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ---- Camera stage ---- */
+
+.room-stage {
+  background: #05070a;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+.room-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+.room-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, filter;
+  transform: scale(1.06);
+  /* keep detail crisp while the camera scales the frame */
+  image-rendering: auto;
+  backface-visibility: hidden;
+}
+
+/* warm bloom keyed to each room's real light source */
+.room-bloom {
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+/* the near plane — a soft architectural aperture you look through */
+.room-aperture {
+  position: absolute;
+  inset: -8%;
+  pointer-events: none;
+  will-change: transform;
+  background:
+    radial-gradient(ellipse 74% 70% at 50% 48%, transparent 42%, rgba(3, 5, 9, 0.5) 100%);
+}
+
+/* light spilling from the space beyond a threshold */
+.room-wash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255, 228, 184, 0.36), transparent 68%);
+  mix-blend-mode: screen;
+}
+
+/* typographic legibility, held steady against the moving image */
+.room-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(4, 6, 10, 0.66) 0%, transparent 42%),
+    linear-gradient(to right, rgba(4, 6, 10, 0.5) 0%, transparent 48%),
+    linear-gradient(to bottom, rgba(4, 6, 10, 0.4) 0%, transparent 20%);
+}
+
+/* ---- Room information ---- */
+
+.room-info {
+  position: fixed;
+  left: clamp(1.5rem, 5.5vw, 6.5rem);
+  bottom: clamp(3.2rem, 9vh, 6.5rem);
+  z-index: 12;
+  max-width: min(30rem, 46vw);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.room-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.room-eyebrow::before {
+  content: '';
+  width: 2.2rem;
+  height: 1px;
+  background: var(--gold);
+  flex: none;
+}
+
+.room-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.4rem, 4.6vw, 4.2rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  margin-bottom: 1.4rem;
+}
+
+.room-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.62rem;
+  list-style: none;
+}
+
+.room-fact {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(0.92rem, 1.05vw, 1.02rem);
+  letter-spacing: 0.05em;
+  color: rgba(242, 239, 233, 0.82);
+  will-change: opacity, transform;
+}
+
+.room-fact::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  flex: none;
+  transform: rotate(45deg);
+  background: var(--gold);
+  opacity: 0.9;
+}
+
+/* ---- Room navigator ---- */
+
+.navigator {
+  position: fixed;
+  right: clamp(1.1rem, 2.4vw, 2.4rem);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.1rem;
+  will-change: opacity;
+}
+
+.navigator-count {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 1rem;
+  white-space: nowrap;
+}
+
+.navigator-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  padding: 0.32rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(242, 239, 233, 0.3);
+  transition: color 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+
+.navigator-label {
+  opacity: 0;
+  transform: translateX(6px);
+  transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.navigator:hover .navigator-label,
+.navigator-item[data-active='true'] .navigator-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.navigator-item:hover,
+.navigator-item[data-active='true'] {
+  color: var(--ink);
+}
+
+.navigator-tick {
+  width: 14px;
+  height: 1px;
+  flex: none;
+  background: currentColor;
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.55s ease;
+}
+
+.navigator-item[data-active='true'] .navigator-tick {
+  width: 30px;
+  background: var(--gold);
+}
+
+.navigator-item:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* ---- Micro-interactions ---- */
+
+.btn {
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+  transition: background 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* a slow light sweeps across on hover */
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 236, 200, 0.16) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn:hover::after {
+  transform: translateX(120%);
+}
+
+.btn:focus-visible {
+  outline: 1px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+.nav-link:focus-visible,
+.menu-item:focus-visible {
+  outline: 1px solid var(--gold);
+  outline-offset: 4px;
+}
+
+/* ---- Property summary ---- */
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.2rem, 3vw, 2.8rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.summary-stat {
+  border-top: 1px solid rgba(242, 239, 233, 0.16);
+  padding-top: 0.85rem;
+  will-change: opacity, transform;
+}
+
+.summary-figure {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-caption {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-top: 0.5rem;
+}
+
+/* ---- Responsive ---- */
+
+@media (max-width: 1100px) {
+  .room-info {
+    max-width: min(26rem, 60vw);
+  }
+}
+
+@media (max-width: 820px) {
+  /* mobile keeps depth and motion — only the near-plane vignette and
+     the hover-only navigator labels step back */
+  .room-info {
+    left: clamp(1.25rem, 6vw, 2rem);
+    right: clamp(1.25rem, 6vw, 2rem);
+    bottom: clamp(5.5rem, 14vh, 8rem);
+    max-width: none;
+  }
+  .room-title {
+    font-size: clamp(2rem, 8.5vw, 2.9rem);
+  }
+  .room-fact {
+    font-size: 0.9rem;
+  }
+  .room-scrim {
+    background:
+      linear-gradient(to top, rgba(4, 6, 10, 0.78) 0%, transparent 52%),
+      linear-gradient(to bottom, rgba(4, 6, 10, 0.5) 0%, transparent 22%);
+  }
+  .navigator {
+    right: 0.75rem;
+    gap: 0;
+  }
+  .navigator-label {
+    display: none;
+  }
+  .navigator-count {
+    font-size: 0.55rem;
+    letter-spacing: 0.18em;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .room-image,
+  .room-bloom,
+  .room-aperture {
+    transition: none !important;
+  }
+  .btn::after {
+    display: none;
+  }
+}
+
+/* ---- A wall passed, a floor climbed ---- */
+
+.room-sweep {
+  position: absolute;
+  inset: -10%;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(6, 8, 12, 0.94) 22%,
+    rgba(6, 8, 12, 0.98) 78%,
+    transparent 100%
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BUILD WITH US — the construction sequence
+   ═══════════════════════════════════════════════════════════════ */
+
+.build-section {
+  position: relative;
+  z-index: 20;
+}
+
+.build-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: #0a0906;
+}
+
+.build-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.03);
+}
+
+.build-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to top, rgba(8, 7, 5, 0.82) 0%, rgba(8, 7, 5, 0.1) 46%, transparent 62%),
+    linear-gradient(to right, rgba(8, 7, 5, 0.62) 0%, transparent 52%);
+}
+
+.build-intro {
+  position: absolute;
+  left: clamp(1.5rem, 5.5vw, 6.5rem);
+  right: clamp(1.5rem, 5.5vw, 6.5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  will-change: opacity;
+  pointer-events: none;
+}
+
+.build-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  margin-top: 1.2rem;
+  text-wrap: balance;
+}
+
+.build-sub {
+  margin-top: 1.4rem;
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+}
+
+/* stage copy */
+.build-stage {
+  position: absolute;
+  left: clamp(1.5rem, 5.5vw, 6.5rem);
+  bottom: clamp(11rem, 24vh, 15rem);
+  max-width: min(34rem, 52vw);
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+
+.build-stage-mark {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.build-stage-n {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.build-stage-rule {
+  width: 2.4rem;
+  height: 1px;
+  background: var(--gold);
+  opacity: 0.65;
+}
+
+.build-stage-label {
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.build-stage-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  line-height: 1.04;
+  text-wrap: balance;
+  margin-bottom: 1rem;
+}
+
+.build-stage-body {
+  font-family: var(--font-body);
+  font-weight: 300;
+  font-size: clamp(0.98rem, 1.2vw, 1.1rem);
+  line-height: 1.75;
+  letter-spacing: 0.02em;
+  color: rgba(242, 239, 233, 0.78);
+  max-width: 30em;
+}
+
+.build-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1.6rem;
+  margin-top: 1.3rem;
+  list-style: none;
+}
+
+.build-point {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.build-point::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  flex: none;
+  transform: rotate(45deg);
+  background: var(--gold);
+}
+
+/* controls: meter, stage chips, cta */
+.build-controls {
+  position: absolute;
+  left: clamp(1.5rem, 5.5vw, 6.5rem);
+  right: clamp(1.5rem, 5.5vw, 6.5rem);
+  bottom: clamp(2.2rem, 6vh, 4rem);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.build-meter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1 1 14rem;
+  max-width: 22rem;
+}
+
+.build-meter-text {
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+
+.build-meter-track {
+  display: block;
+  height: 1px;
+  background: rgba(242, 239, 233, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.build-meter-fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--gold), var(--gold-bright));
+  transform-origin: left;
+  transform: scaleX(0);
+  will-change: transform;
+}
+
+.build-chips {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  pointer-events: auto;
+}
+
+.build-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.62rem 1.15rem;
+  background: rgba(10, 10, 12, 0.42);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(242, 239, 233, 0.16);
+  color: var(--ink-dim);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.build-chip:hover {
+  color: var(--ink);
+  border-color: rgba(194, 160, 97, 0.55);
+  transform: translateY(-2px);
+}
+
+.build-chip[data-active='true'] {
+  color: #0d0c0a;
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.build-chip-n {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+}
+
+.build-chip:focus-visible {
+  outline: 1px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+.build-cta {
+  pointer-events: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   THE INVITATION
+   ═══════════════════════════════════════════════════════════════ */
+
+.closing {
+  position: relative;
+  z-index: 20;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: clamp(5rem, 12vh, 9rem) clamp(1.5rem, 5.5vw, 6.5rem) clamp(4rem, 9vh, 6rem);
+  overflow: hidden;
+  background: var(--void);
+}
+
+.closing-media {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.closing-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.04);
+}
+
+.closing-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 50%, rgba(5, 7, 11, 0.62), rgba(4, 6, 10, 0.9) 78%),
+    linear-gradient(to bottom, rgba(4, 6, 10, 0.7), rgba(4, 6, 10, 0.55));
+}
+
+.closing-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 62rem;
+}
+
+.closing-headline {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2.8rem, 7vw, 6.4rem);
+  line-height: 1.0;
+  letter-spacing: 0.01em;
+  margin-top: 1.8rem;
+  text-wrap: balance;
+}
+
+.closing-body {
+  margin-top: 1.8rem;
+  text-align: center;
+}
+
+.closing-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2.6rem;
+}
+
+.closing-details {
+  display: flex;
+  gap: clamp(1.2rem, 3vw, 2.6rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2.8rem;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+}
+
+.closing-details a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.5s ease, color 0.5s ease;
+}
+
+.closing-details a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+
+.closing-foot {
+  position: relative;
+  margin-top: clamp(3rem, 8vh, 5rem);
+  font-family: var(--font-body);
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---- Responsive: build + closing ---- */
+
+@media (max-width: 1100px) {
+  .build-stage {
+    max-width: min(30rem, 62vw);
+  }
+}
+
+@media (max-width: 820px) {
+  .build-stage {
+    left: clamp(1.25rem, 6vw, 2rem);
+    right: clamp(1.25rem, 6vw, 2rem);
+    bottom: clamp(12.5rem, 30vh, 17rem);
+    max-width: none;
+  }
+  .build-stage-title {
+    font-size: clamp(1.7rem, 7.5vw, 2.4rem);
+  }
+  .build-stage-body {
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+  .build-points {
+    gap: 0.4rem 1.1rem;
+    margin-top: 1rem;
+  }
+  .build-point {
+    font-size: 0.72rem;
+  }
+  .build-controls {
+    left: clamp(1.25rem, 6vw, 2rem);
+    right: clamp(1.25rem, 6vw, 2rem);
+    bottom: clamp(1.5rem, 4vh, 2.5rem);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  .build-meter {
+    max-width: none;
+  }
+  .build-chips {
+    gap: 0.4rem;
+  }
+  .build-chip {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+  }
+  .build-cta .btn {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+  }
+  .build-headline {
+    font-size: clamp(2.6rem, 13vw, 4rem);
+  }
+  .closing-headline {
+    font-size: clamp(2.4rem, 11vw, 3.6rem);
+  }
+  .closing-actions .btn {
+    width: 100%;
+  }
+  .closing-details {
+    font-size: 0.78rem;
+    gap: 0.8rem;
+    flex-direction: column;
+  }
+}
+
+/* ---- Legibility corrections ---- */
+
+/* chapter copy keeps clear of the navigator on wider screens */
+@media (min-width: 821px) {
+  .chapter-section {
+    padding-right: clamp(3rem, 5vw, 6.5rem);
+  }
+}
+
+/* the navigator sits over photography, so it carries its own ground */
+.navigator::before {
+  content: '';
+  position: absolute;
+  inset: -1.6rem -1.1rem -1.6rem -2.5rem;
+  background: linear-gradient(to left, rgba(4, 6, 10, 0.55), transparent 88%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.navigator-count {
+  color: var(--gold-bright);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.6);
+}
+
+.navigator-item {
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+}
+
+/* small captions were disappearing against bright rooms */
+.summary-caption {
+  color: rgba(242, 239, 233, 0.62);
+}
+
+.room-fact {
+  color: rgba(242, 239, 233, 0.9);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+
+.room-title,
+.build-stage-title {
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+}
+
+.build-stage-body,
+.build-point {
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* the house should still be a presence behind the invitation */
+.closing-scrim {
+  background:
+    radial-gradient(ellipse 78% 68% at 50% 46%, rgba(5, 7, 11, 0.42), rgba(4, 6, 10, 0.74) 82%),
+    linear-gradient(to bottom, rgba(4, 6, 10, 0.4), rgba(4, 6, 10, 0.3));
+}
+
+.closing-foot {
+  color: rgba(242, 239, 233, 0.42);
+}
+
+/* the navigator's ground should have no visible edges */
+.navigator::before {
+  background: linear-gradient(to left, rgba(4, 6, 10, 0.5), transparent 90%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent);
+}
+
+@media (max-width: 820px) {
+  /* in a stacked column, flex-basis reads as height — the meter must
+     keep its natural size or it pushes into the stage copy */
+  .build-meter {
+    flex: 0 0 auto;
+    max-width: none;
+  }
+}

@@ -50,6 +50,17 @@ in commit `87704fc`. Do not reintroduce `three`, `@react-three/fiber`,
 `@react-three/drei`, or generated building imagery. If a scene needs a new
 visual, it comes from client footage or client photography.
 
+**Do not make the room transitions uniform.** Each threshold in
+`rooms.js` has an `enter` kind that means something physical: `rise`
+(climbing to the bedroom floor), `wall` (passing a door into dining or
+the garage), `light` (stepping outside), `focus` (pulling onto a
+detail). Keep new rooms honest to that vocabulary.
+
+**Do not map build scroll linearly to video time.** The building goes
+up in the first ~19% of that footage; `toVideoTime()` in
+`BuildWithUs.jsx` remaps each stage's quarter of scroll onto the frames
+that actually belong to it. A linear map races past the construction.
+
 **Do not use `gsap.ticker.add()` for a persistent loop.** GSAP's ticker
 sleeps when no tweens are active, which silently freezes anything driven by
 it. This caused a bug where every chapter past the second one stayed
@@ -92,34 +103,44 @@ Bundle is ~410 KB of JS total (~140 KB gzipped). Media dominates payload:
 
 ```
 src/
-  App.jsx                    Act I + Act II composition; the journey
-                             ScrollTrigger; lagSmoothing(0)
-  components/ui/
-    HeroCinematic.jsx        THE CORE FILE. Scroll→video scrubbing,
-                             staged typography, parallax, progress rail,
-                             hand-off fade
-    PhotoStage.jsx           Photographic chapter backdrops; also owns the
-                             journey smoothing rAF loop
-    Overlay.jsx              All chapter content (headlines, cards, chart,
-                             contact block) + crossfade logic
-    Nav.jsx                  Fixed header, desktop links / mobile menu
-    ProgressRail.jsx         Right-edge chapter rail (desktop only)
-    Loader.jsx               Opening curtain, gated on video buffering
-    Cursor.jsx               Gold dot + lagging ring (fine pointers only)
-    RevealText.jsx           Masked line-by-line text reveal helper
+  App.jsx                  The four acts; the residence ScrollTrigger;
+                           lagSmoothing(0)
   journey/
-    chapters.js             Chapter ranges, nav targets, caption timings
-    journeyState.js         Shared mutable state (see §5)
-    scrollTo.js             Journey-relative scrolling helper
+    rooms.js               THE SCRIPT. Room order, camera moves,
+                           threshold kinds, copy, facts, scroll weights,
+                           nav targets, derived ROOM_WINDOWS + JOURNEY_VH
+    journeyState.js        Shared mutable state (see §5)
+    scrollTo.js            scrollToJourney(p) / scrollToAnchor(id)
+  components/
+    rooms/
+      RoomStage.jsx        THE CAMERA. Per-room dolly, doorway
+                           transitions, threshold vocabulary, depth
+                           layers, bloom, parallax; owns journey damping
+      RoomInfo.jsx         Progressive room details
+      RoomNavigator.jsx    Vertical plan + "03 / 11 — KITCHEN" counter
+    build/
+      BuildWithUs.jsx      Scrubbed construction sequence, stage chips,
+                           completion meter, toVideoTime() remap
+    closing/
+      ClosingSection.jsx   The invitation
+    ui/
+      HeroCinematic.jsx    The arrival film (clipped at CLIP_END)
+      Overlay.jsx          Business chapters, anchored to rooms
+      Nav.jsx              Fixed header; rooms and anchors
+      Loader.jsx           Opening curtain, gated on video buffering
+      Cursor.jsx           Gold dot + lagging ring (fine pointers only)
+      RevealText.jsx       Masked line-by-line reveal helper
   hooks/
-    useRafLoop.js           Always-on requestAnimationFrame loop
-    useIsMobile.js          Viewport/pointer media query
-  styles/global.css         Design tokens, typography, buttons, scrims
+    useRafLoop.js          Always-on requestAnimationFrame loop
+    useMagnetic.js         Buttons lean toward the cursor
+    useIsMobile.js         Viewport/pointer media query
+  styles/global.css        Tokens, typography, stage, rooms, build, closing
 
 public/
-  video/                    Hero film: 1080p + 720p, MP4 + WebM, poster
-  img/chapters/             10 chapter backdrops (1920×1080 JPG)
-netlify.toml                Build config + immutable media caching
+  video/                   Two scrub-optimised films (hero + build),
+                           1080p + 720p, H.264 + VP9, posters
+  img/chapters/            13 room photographs (1920×1080 JPG)
+netlify.toml               Build config + immutable media caching
 ```
 
 ---
@@ -137,29 +158,39 @@ per-frame updates never trigger re-renders.
 |---|---|---|
 | `heroProgress` | HeroCinematic | 0→1 through the film hero |
 | `progress` | App.jsx | 0→1 through the chapter journey (raw) |
-| `smooth` | PhotoStage | inertia-damped `progress` — **read this** |
-| `mouse` / `smoothMouse` | PhotoStage | pointer position, raw and lerped |
+| `smooth` | RoomStage | inertia-damped `progress` — **read this** |
+| `mouse` / `smoothMouse` | RoomStage | pointer position, raw and lerped |
+| `roomIndex` | RoomStage | which room the camera is inside |
+| `buildProgress` | BuildWithUs | 0→1 through the construction |
 | `ready` | Loader | true once the opening curtain lifts |
 
 It is also exposed as `window.__journey` for debugging and automated
 testing (see §8).
 
-**Act I.** A ScrollTrigger on the 420vh hero section writes its progress to
-a local target. A rAF loop damps toward that target (exponential smoothing,
-λ≈7) and sets `video.currentTime = t * duration`. The damping is what makes
-scrubbing feel weighted instead of jittery. The same loop drives the staged
-captions, gold line, rail and the pointer perspective transform.
+**Act I.** A ScrollTrigger on the 560vh hero section writes progress to a
+local target. A rAF loop damps toward it (λ≈4.6) and sets
+`video.currentTime = t * duration * CLIP_END`. Damping is what makes
+scrubbing feel weighted rather than jittery.
 
-**Act II.** A second ScrollTrigger on `#journey-track` (950vh) writes
-`journey.progress`. PhotoStage's rAF loop damps it into `journey.smooth`,
-then crossfades backdrops. Overlay's rAF loop reads `journey.smooth` and
-crossfades chapter content over the same timeline.
+**Act II.** A ScrollTrigger on `#journey-track` (`JOURNEY_VH`, derived
+from the room weights) writes `journey.progress`. RoomStage's rAF loop
+damps it into `journey.smooth` (λ≈2.1 — deliberately slower than the
+film), then for every room computes an `enter`/`exit` pair from its
+window, a dolly position, a depth scale, and a threshold treatment.
+RoomInfo, Overlay and RoomNavigator all read `journey.smooth`.
 
-**The hero gate.** Act II's canvas and chapter content sit behind the hero
-in the document, so both Overlay and PhotoStage multiply their opacity by a
-gate derived from `heroProgress` — content stays hidden until the film is
-~93% complete, then fades in as the film fades out. If chapters ever appear
-during the film, this gate is what to look at.
+**Act III** repeats the Act I pattern with its own ScrollTrigger and
+the `toVideoTime()` remap.
+
+**The hero gate.** Acts II's layers sit behind the hero in the document,
+so RoomStage, RoomInfo and Overlay each multiply opacity by a gate
+derived from `heroProgress`. Content stays hidden until the film is ~90%
+complete. If rooms ever appear during the film, this gate is the cause.
+
+**Room windows.** `ROOM_WINDOWS` in `rooms.js` divides 0→1 into one
+`[start, end]` per room, proportional to `weight`. Everything — camera,
+copy, navigator, deep links — derives from those windows, so changing a
+weight re-times the whole tour consistently.
 
 **Chapter timeline.** `CHAPTERS` in `chapters.js` maps each chapter to a
 `[start, end]` range in 0→1 progress space plus a `center` used by

@@ -1,53 +1,76 @@
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { gsap } from 'gsap'
-import { CHAPTERS, TIMINGS } from '../../journey/chapters'
+import { ROOMS, ROOM_WINDOWS, PROPERTY } from '../../journey/rooms'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { journey } from '../../journey/journeyState'
+import { useMagnetic } from '../../hooks/useMagnetic'
 import RevealText, { FadeIn } from './RevealText'
-import { scrollToJourney } from '../../journey/scrollTo'
 
-// Every chapter is a fixed full-screen layer over the 3D stage.
-// Layers crossfade as the camera travels — content never stacks
-// vertically under empty black space.
+// ————————————————————————————————————————————————————————————————
+// Overlay — what CRD has to say, said from inside a room.
+//
+// Every chapter is anchored to a room of the residence rather than to
+// an abstract slice of the page: management speaks at the kitchen
+// island, real estate in the primary suite, investment at the bronze
+// hardware, the summary and the invitation out on the terrace. The
+// chapter holds while the camera is in its room and releases as the
+// camera moves on, so content and place arrive together.
+// ————————————————————————————————————————————————————————————————
 
-function sectionOpacity(t, [start, end]) {
-  const feather = Math.min(0.045, (end - start) * 0.45)
-  const fadeIn = start <= 0 ? 1 : gsap.utils.clamp(0, 1, (t - start) / feather)
-  const fadeOut = end >= 1 ? 1 : gsap.utils.clamp(0, 1, (end - t) / feather)
-  return Math.min(fadeIn, fadeOut)
+// Chapters live slightly inside their room, letting the doorway
+// transition finish before words appear.
+const LEAD_IN = 0.2
+const LEAD_OUT = 0.16
+
+function clamp01(v) {
+  return Math.min(Math.max(v, 0), 1)
 }
 
+const CHAPTER_ROOMS = ROOMS.map((r, i) => ({ ...r, index: i })).filter((r) => r.chapter)
+
 export default function Overlay() {
-  const refs = useRef([])
+  const refs = useRef({})
   const [activeId, setActiveId] = useState(null)
+  const last = useRef(null)
 
   useRafLoop(() => {
     const t = journey.smooth
-    // the film hero owns the screen until it completes
-    const heroGate = gsap.utils.clamp(0, 1, (journey.heroProgress - 0.93) / 0.05)
+    // the film hero holds the screen until it has carried us inside
+    const gate = clamp01((journey.heroProgress - 0.9) / 0.085)
     let current = null
-    CHAPTERS.forEach((ch, i) => {
-      const el = refs.current[i]
+
+    CHAPTER_ROOMS.forEach((room) => {
+      const el = refs.current[room.id]
       if (!el) return
-      const o = (journey.ready ? sectionOpacity(t, ch.range) : 0) * heroGate
-      const drift = (t - ch.center) * 90
+      const w = ROOM_WINDOWS[room.index]
+      const span = Math.max(w.end - w.start, 0.0001)
+      const ct = (t - w.start) / span
+
+      const appear = clamp01(ct / LEAD_IN)
+      const depart = clamp01((ct - (1 - LEAD_OUT)) / LEAD_OUT)
+      const o = appear * (1 - depart) * gate
+
       el.style.opacity = o.toFixed(3)
-      el.style.transform = `translate3d(0, ${(-drift).toFixed(1)}px, 0)`
       el.style.visibility = o < 0.01 ? 'hidden' : 'visible'
-      if (o > 0.15) current = ch.id
+      // content drifts gently against the camera's travel
+      el.style.transform = `translate3d(0, ${((0.5 - ct) * 26).toFixed(1)}px, 0)`
+      if (o > 0.4) current = room.id
     })
-    if (typeof window !== 'undefined') window.__activeId = current
-    setActiveId((prev) => (prev === current ? prev : current))
+
+    if (current !== last.current) {
+      last.current = current
+      setActiveId(current)
+    }
   })
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 10, pointerEvents: 'none' }}>
-      {CHAPTERS.map((ch, i) => (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 14, pointerEvents: 'none' }}>
+      {CHAPTER_ROOMS.map((room) => (
         <section
-          key={ch.id}
-          ref={(el) => (refs.current[i] = el)}
-          aria-label={ch.label}
+          key={room.id}
+          ref={(el) => (refs.current[room.id] = el)}
+          aria-label={room.label}
+          className="chapter-section"
           style={{
             position: 'absolute',
             inset: 0,
@@ -57,7 +80,7 @@ export default function Overlay() {
             willChange: 'opacity, transform',
           }}
         >
-          <ChapterContent id={ch.id} active={activeId === ch.id} />
+          <ChapterContent id={room.chapter} active={activeId === room.id} />
         </section>
       ))}
     </div>
@@ -68,22 +91,16 @@ const pad = 'clamp(1.5rem, 5.5vw, 6.5rem)'
 
 function ChapterContent({ id, active }) {
   switch (id) {
-    case 'hero':
-      return <Hero active={active} />
-    case 'approach':
+    case 'about':
       return <Approach active={active} />
-    case 'enter':
-      return <Enter active={active} />
     case 'management':
       return <Management active={active} />
     case 'realestate':
       return <RealEstate active={active} />
     case 'investment':
       return <Investment active={active} />
-    case 'services':
-      return <Services active={active} />
-    case 'contact':
-      return <Contact active={active} />
+    case 'summary':
+      return <Summary active={active} />
     default:
       return null
   }
@@ -101,44 +118,21 @@ function Mark({ index, label, active }) {
   )
 }
 
-
-
-/* — 01 · HERO (transition out of the film into the live tour) — */
-function Hero({ active }) {
+// A button that leans toward the cursor as it approaches.
+function MagneticButton({ children, onClick, href, solid }) {
+  const ref = useMagnetic()
+  const cls = `btn${solid ? ' btn--solid' : ''}`
+  if (href) {
+    return (
+      <a ref={ref} className={cls} href={href}>
+        {children}
+      </a>
+    )
+  }
   return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        padding: pad,
-        paddingBottom: 'clamp(5rem, 12vh, 9rem)',
-      }}
-    >
-      <div className="chapter-copy" style={{ maxWidth: 760 }}>
-        <FadeIn active={active} delay={0.15}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.6rem' }}>
-            <span className="eyebrow" style={{ fontSize: '0.62rem' }}>The Property</span>
-            <span style={{ width: 46, height: 1, background: 'var(--gold)', opacity: 0.6 }} />
-            <span className="eyebrow" style={{ fontSize: '0.62rem', color: 'var(--ink-faint)' }}>A CRD Development</span>
-          </div>
-        </FadeIn>
-        <RevealText
-          as="h2"
-          className="display-lg"
-          active={active}
-          delay={0.3}
-          lines={['Every detail,', 'considered.']}
-        />
-        <FadeIn active={active} delay={0.85}>
-          <p className="body-copy" style={{ marginTop: '1.6rem' }}>
-            Keep scrolling — what CRD builds, manages and grows, told
-            through the property itself.
-          </p>
-        </FadeIn>
-      </div>
-    </div>
+    <button ref={ref} className={cls} onClick={onClick}>
+      {children}
+    </button>
   )
 }
 
@@ -176,42 +170,6 @@ function Approach({ active }) {
     </div>
   )
 }
-
-/* — 03 · ENTER — */
-function Enter({ active }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        padding: pad,
-        paddingBottom: 'clamp(4rem, 12vh, 9rem)',
-        textAlign: 'center',
-      }}
-    >
-      <div className="chapter-copy">
-        <Mark index="02" label="The Property" active={active} />
-        <RevealText
-          as="h2"
-          className="display-lg"
-          active={active}
-          delay={0.2}
-          lines={['Step inside a CRD development.']}
-        />
-        <FadeIn active={active} delay={0.7}>
-          <p className="body-copy" style={{ marginTop: '1.6rem', marginInline: 'auto', textAlign: 'center' }}>
-            Every property we build, buy or manage is held to the same
-            standard — the one you're walking into.
-          </p>
-        </FadeIn>
-      </div>
-    </div>
-  )
-}
-
 /* — 04 · PROPERTY MANAGEMENT — */
 const SERVICES_MGMT = [
   ['Tenant Relations', 'Responsive, respectful, retention-focused'],
@@ -235,7 +193,7 @@ function Management({ active }) {
       }}
     >
       <div className="chapter-copy" style={{ maxWidth: 520, flex: '1 1 320px' }}>
-        <Mark index="03" label="Management" active={active} />
+        <Mark index="02" label="Management" active={active} />
         <RevealText
           as="h2"
           className="display-lg"
@@ -280,7 +238,6 @@ function Management({ active }) {
     </div>
   )
 }
-
 /* — 05 · REAL ESTATE — */
 const RE_ROWS = [
   ['Properties', 'Residences and multi-family assets across the Northeast'],
@@ -301,7 +258,7 @@ function RealEstate({ active }) {
       }}
     >
       <div className="chapter-copy" style={{ maxWidth: 640 }}>
-        <Mark index="04" label="Real Estate" active={active} />
+        <Mark index="03" label="Real Estate" active={active} />
         <RevealText
           as="h2"
           className="display-xl"
@@ -350,7 +307,6 @@ function RealEstate({ active }) {
     </div>
   )
 }
-
 /* — 06 · INVESTMENT — */
 function Chart({ active }) {
   // Indexed value curve — drawn as the section becomes active
@@ -417,7 +373,7 @@ function Investment({ active }) {
       }}
     >
       <div className="chapter-copy" style={{ maxWidth: 560, flex: '1 1 320px' }}>
-        <Mark index="05" label="Investment" active={active} />
+        <Mark index="04" label="Investment" active={active} />
         <RevealText
           as="h2"
           className="display-lg"
@@ -466,59 +422,77 @@ function Investment({ active }) {
   )
 }
 
-/* — 07 · SERVICES (synced captions to the facade signage) — */
-const SERVICE_CAPTIONS = [
+/* — THE RESIDENCE IN FULL — the property, stated plainly, on the terrace — */
+const SERVICE_LINES = [
   ['Real Estate', 'Acquisition and sales across the Northeast — residences, multi-family, mixed-use.'],
   ['Property Management', 'Full-service operations for owners who expect performance, not excuses.'],
   ['Investment', 'Long-term value creation through disciplined, ownership-minded capital.'],
 ]
 
-function Services({ active }) {
-  const [idx, setIdx] = useState(0)
-
-  useRafLoop(() => {
-    const t = journey.smooth
-    const [a, b, c] = TIMINGS.services
-    const next = t < (a + b) / 2 ? 0 : t < (b + c) / 2 ? 1 : 2
-    setIdx((prev) => (prev === next ? prev : next))
-  })
-
-  const [title, note] = SERVICE_CAPTIONS[idx]
-
+function Summary({ active }) {
   return (
     <div
       style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
         padding: pad,
-        paddingBottom: 'clamp(4rem, 11vh, 8rem)',
+        gap: 'clamp(1.8rem, 4vh, 3rem)',
       }}
     >
-      <div className="chapter-copy" style={{ maxWidth: 620 }}>
-        <Mark index="06" label="What we do" active={active} />
-        <motion.div
-          key={title}
-          initial={{ opacity: 0, y: 26 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <h2 className="display-lg">{title}</h2>
-          <p className="body-copy" style={{ marginTop: '1.2rem' }}>{note}</p>
-        </motion.div>
-        <FadeIn active={active} delay={0.4}>
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '2rem' }}>
-            {SERVICE_CAPTIONS.map((_, i) => (
-              <span
-                key={i}
-                style={{
-                  width: 34,
-                  height: 2,
-                  background: i === idx ? 'var(--gold)' : 'rgba(242,239,233,0.15)',
-                  transition: 'background 0.5s ease',
-                }}
-              />
+      <div className="chapter-copy" style={{ maxWidth: 1080 }}>
+        <Mark index="05" label="The Residence" active={active} />
+        <RevealText
+          as="h2"
+          className="display-lg"
+          active={active}
+          delay={0.2}
+          lines={['Everything you just', 'walked through.']}
+        />
+        <FadeIn active={active} delay={0.7}>
+          <div className="summary-grid" style={{ marginTop: '2.6rem', maxWidth: 760 }}>
+            {PROPERTY.stats.map(([figure, caption], i) => (
+              <FadeIn key={caption} active={active} delay={0.8 + i * 0.09}>
+                <div className="summary-stat">
+                  <div className="summary-figure">{figure}</div>
+                  <div className="summary-caption">{caption}</div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </FadeIn>
+        <FadeIn active={active} delay={1.45}>
+          <div
+            style={{
+              marginTop: '2.6rem',
+              display: 'flex',
+              gap: 'clamp(1.4rem, 3vw, 3rem)',
+              flexWrap: 'wrap',
+              maxWidth: 900,
+            }}
+          >
+            {SERVICE_LINES.map(([title, note]) => (
+              <div key={title} style={{ flex: '1 1 15rem', maxWidth: '20rem' }}>
+                <div
+                  className="serif-italic"
+                  style={{ fontSize: 'clamp(1.15rem, 1.9vw, 1.5rem)', color: 'var(--gold-bright)' }}
+                >
+                  {title}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.82rem',
+                    fontWeight: 300,
+                    lineHeight: 1.7,
+                    letterSpacing: '0.03em',
+                    color: 'var(--ink-dim)',
+                    marginTop: '0.5rem',
+                  }}
+                >
+                  {note}
+                </div>
+              </div>
             ))}
           </div>
         </FadeIn>
@@ -527,85 +501,3 @@ function Services({ active }) {
   )
 }
 
-/* — 08 · CONTACT — */
-function Contact({ active }) {
-  return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        padding: pad,
-      }}
-    >
-      <div className="chapter-copy" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Mark index="07" label="Contact" active={active} />
-        <RevealText
-          as="h2"
-          className="display-xl"
-          active={active}
-          delay={0.2}
-          lines={["Let's build", "what's next."]}
-        />
-        <FadeIn active={active} delay={0.8}>
-          <p className="body-copy" style={{ marginTop: '1.8rem', textAlign: 'center' }}>
-            Owners, buyers, sellers and partners — bring us the property,
-            we'll bring the plan.
-          </p>
-        </FadeIn>
-        <FadeIn active={active} delay={1.05}>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '2.6rem', flexWrap: 'wrap', justifyContent: 'center', pointerEvents: 'auto' }}>
-            <a className="btn btn--solid" href="mailto:partners@crdpropertygroup.com">
-              Work with CRD
-            </a>
-            <a className="btn" href="mailto:hello@crdpropertygroup.com">
-              Contact us
-            </a>
-          </div>
-        </FadeIn>
-        <FadeIn active={active} delay={1.3}>
-          <div
-            style={{
-              marginTop: '2.8rem',
-              display: 'flex',
-              gap: 'clamp(1.2rem, 3vw, 2.6rem)',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              fontSize: '0.75rem',
-              fontWeight: 300,
-              letterSpacing: '0.12em',
-              color: 'var(--ink-dim)',
-              pointerEvents: 'auto',
-            }}
-          >
-            <a href="mailto:hello@crdpropertygroup.com" style={{ color: 'inherit', textDecoration: 'none' }}>
-              hello@crdpropertygroup.com
-            </a>
-            <span>+1 (617) 555-0148</span>
-            <span>Boston, Massachusetts</span>
-          </div>
-        </FadeIn>
-      </div>
-
-      <FadeIn active={active} delay={1.5}>
-        <div
-          className="eyebrow"
-          style={{
-            position: 'absolute',
-            bottom: 'clamp(1.4rem, 4vh, 2.6rem)',
-            left: 0,
-            right: 0,
-            fontSize: '0.52rem',
-            color: 'var(--ink-faint)',
-            letterSpacing: '0.32em',
-          }}
-        >
-          © CRD Property Group — Real Estate · Property Management · Investment
-        </div>
-      </FadeIn>
-    </div>
-  )
-}

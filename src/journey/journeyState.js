@@ -15,6 +15,10 @@ export const journey = {
   ready: false,
   // Progress of the cinematic film hero that precedes the tour
   heroProgress: 0,
+  // Index of the room the camera is currently inside
+  roomIndex: 0,
+  // Progress through the construction sequence, 0 → 1
+  buildProgress: 0,
 }
 
 export function damp(current, target, lambda, delta) {

@@ -14,3 +14,15 @@ export function scrollToJourney(p, duration = 2.4) {
     ease: 'power2.inOut',
   })
 }
+
+// Travels to a named act of the site (the build sequence, the closing
+// invitation) rather than a point inside the residence.
+export function scrollToAnchor(id, duration = 2.2) {
+  const el = document.getElementById(id)
+  if (!el) return
+  gsap.to(window, {
+    scrollTo: { y: el.offsetTop },
+    duration,
+    ease: 'power2.inOut',
+  })
+}
