@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
 
 // Gold dot with a lagging halo ring. Desktop / fine pointers only.
 export default function Cursor() {
@@ -15,41 +14,44 @@ export default function Cursor() {
     const ringPos = { ...pos }
     let hovering = false
     let visible = false
+    let raf
 
     const onMove = (e) => {
       pos.x = e.clientX
       pos.y = e.clientY
       if (!visible) {
         visible = true
-        gsap.to([dot, ring], { opacity: 1, duration: 0.4 })
+        dot.style.opacity = '1'
+        ring.style.opacity = '1'
       }
-      const target = e.target
-      hovering = !!target.closest('a, button, [data-cursor]')
+      hovering = !!e.target.closest('a, button, [data-cursor]')
     }
 
     const onLeave = () => {
       visible = false
-      gsap.to([dot, ring], { opacity: 0, duration: 0.3 })
+      dot.style.opacity = '0'
+      ring.style.opacity = '0'
     }
 
-    const update = () => {
+    const tick = () => {
       ringPos.x += (pos.x - ringPos.x) * 0.14
       ringPos.y += (pos.y - ringPos.y) * 0.14
       dot.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%)`
       const scale = hovering ? 1.8 : 1
       ring.style.transform = `translate(${ringPos.x}px, ${ringPos.y}px) translate(-50%, -50%) scale(${scale})`
       ring.style.borderColor = hovering ? 'rgba(201,169,98,0.9)' : 'rgba(201,169,98,0.4)'
+      raf = requestAnimationFrame(tick)
     }
 
     window.addEventListener('pointermove', onMove)
     document.documentElement.addEventListener('pointerleave', onLeave)
-    gsap.ticker.add(update)
+    raf = requestAnimationFrame(tick)
     document.documentElement.classList.add('custom-cursor')
 
     return () => {
       window.removeEventListener('pointermove', onMove)
       document.documentElement.removeEventListener('pointerleave', onLeave)
-      gsap.ticker.remove(update)
+      cancelAnimationFrame(raf)
       document.documentElement.classList.remove('custom-cursor')
     }
   }, [])
@@ -69,6 +71,7 @@ export default function Cursor() {
           zIndex: 90,
           pointerEvents: 'none',
           opacity: 0,
+          transition: 'opacity 0.4s ease',
         }}
       />
       <div
@@ -84,7 +87,7 @@ export default function Cursor() {
           zIndex: 90,
           pointerEvents: 'none',
           opacity: 0,
-          transition: 'border-color 0.3s ease',
+          transition: 'opacity 0.4s ease, border-color 0.3s ease',
         }}
       />
     </>
