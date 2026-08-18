@@ -1,20 +1,13 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { reveal, revealScale } from '../../lib/motion'
-import { useMagnetic } from '../../hooks/useMagnetic'
+import { curtainV, fadeV, IN_VIEW_EARLY } from '../../lib/motion'
+import { SectionHead, Headline, Rise, Button } from '../ui/Primitives'
 
-function CtaButton({ children, href, solid }) {
-  const ref = useMagnetic()
-  return (
-    <a ref={ref} className={`btn${solid ? ' btn--solid' : ''}`} href={href}>
-      {children}
-    </a>
-  )
-}
-
-// IMPORTANT: no fake portfolio returns, no fake occupancy statistics,
+// IMPORTANT — content constraint, not a style preference:
+// no fabricated portfolio returns, no fabricated occupancy statistics,
 // no guaranteed appreciation, no guaranteed cash flow, no promises of
-// profit. Every line here is deliberately qualified.
+// profit. Every benefit below is written as a possibility, never a
+// promise. Keep that pattern if you edit this copy.
 const BENEFITS = [
   {
     n: '01',
@@ -58,7 +51,8 @@ export default function Investment() {
       video.pause()
       return
     }
-
+    // Play only while on screen — the film should never burn battery
+    // in a tab nobody is looking at.
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) video.play().catch(() => {})
@@ -71,17 +65,41 @@ export default function Investment() {
   }, [])
 
   return (
-    <section id="investment" className="section investment-section" aria-label="Investment and New Construction">
-      <div className="section-inner">
-        <motion.div {...reveal(0)} className="eyebrow">
-          Multifamily · New Construction · Long-Term Value
-        </motion.div>
-        <motion.h2 {...reveal(0.08)} className="display-lg investment-headline">
-          Own the asset. Build the future.
-        </motion.h2>
+    <section
+      id="investment"
+      className="section investment"
+      aria-label="Investment and New Construction"
+    >
+      <div className="shell">
+        <SectionHead index="04" label="Multifamily · New Construction · Long-Term Value" />
 
-        <div className="investment-layout">
-          <motion.div {...revealScale(0.1)} className="investment-video-wrap">
+        <div className="investment-top">
+          <Headline className="display-xl" lines={['Own the asset.', 'Build the future.']} />
+          <Rise delay={0.18} className="investment-lede">
+            <p className="body-copy">
+              Multifamily and new-construction real estate can combine
+              recurring rental income, operational scale and long-term
+              ownership value. CRD helps clients look beyond the building
+              itself — evaluating the property, the operating plan, the
+              resident experience and the opportunities that can
+              strengthen an asset over time.
+            </p>
+            <div className="investment-actions">
+              <Button solid href="#contact">
+                Explore Investment Opportunities
+              </Button>
+              <Button href="#contact">Build With CRD</Button>
+            </div>
+          </Rise>
+        </div>
+
+        <motion.div
+          className="investment-stage"
+          initial="rest"
+          whileInView="show"
+          viewport={IN_VIEW_EARLY}
+        >
+          <motion.div className="investment-clip" variants={curtainV(0.1)}>
             <video
               ref={videoRef}
               className="investment-video"
@@ -93,43 +111,28 @@ export default function Investment() {
               preload="metadata"
             />
           </motion.div>
-
-          <div className="investment-panel">
-            <motion.p {...reveal(0.14)} className="body-copy">
-              Multifamily and new-construction real estate can combine
-              recurring rental income, operational scale and long-term
-              ownership value. CRD helps clients look beyond the building
-              itself — evaluating the property, the operating plan, the
-              resident experience and the opportunities that can
-              strengthen an asset over time.
-            </motion.p>
-
-            <motion.div {...reveal(0.2)} className="investment-actions">
-              <CtaButton solid href="#contact">
-                Explore Investment Opportunities
-              </CtaButton>
-              <CtaButton href="#contact">Build With CRD</CtaButton>
-            </motion.div>
-          </div>
-        </div>
+          <motion.span className="investment-frame" aria-hidden="true" variants={fadeV(0.9)} />
+        </motion.div>
 
         <div className="benefit-grid">
           {BENEFITS.map((b, i) => (
-            <motion.div key={b.n} {...reveal(0.05 * i, 18, 0.6)} className="glass-card benefit-card">
-              <div className="eyebrow" style={{ fontSize: '0.55rem', color: 'var(--gold)' }}>
-                {b.n}
-              </div>
-              <div className="benefit-title">{b.title}</div>
-              <p className="benefit-body">{b.body}</p>
-            </motion.div>
+            <Rise key={b.n} delay={(i % 3) * 0.08} y={22} duration={0.75}>
+              <article className="benefit">
+                <span className="benefit-n">{b.n}</span>
+                <h3 className="benefit-title">{b.title}</h3>
+                <p className="benefit-body">{b.body}</p>
+              </article>
+            </Rise>
           ))}
         </div>
 
-        <motion.p {...reveal(0.1)} className="investment-disclaimer">
-          Every investment is different. CRD evaluates each property on
-          its actual condition, financing, market, operating costs and
-          business plan.
-        </motion.p>
+        <Rise delay={0.1}>
+          <p className="investment-note">
+            Every investment is different. CRD evaluates each property on
+            its actual condition, financing, market, operating costs and
+            business plan.
+          </p>
+        </Rise>
       </div>
     </section>
   )

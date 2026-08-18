@@ -1,37 +1,44 @@
-import { motion } from 'framer-motion'
-import { reveal } from '../../lib/motion'
+import { SectionHead, Headline, Rise, Frame } from '../ui/Primitives'
 
 const SERVICES = [
-  'Tenant relations',
-  'Leasing coordination',
-  'Rent and payment oversight',
-  'Maintenance and vendor coordination',
-  'Inspections and property care',
-  'Owner communication and reporting',
+  ['Tenant relations', 'Responsive, respectful, retention-focused.'],
+  ['Leasing coordination', 'Listing, showing, screening and turnover.'],
+  ['Rent and payment oversight', 'Collections, escalations and owner statements.'],
+  ['Maintenance and vendor coordination', 'Scheduled upkeep and trusted trades.'],
+  ['Inspections and property care', 'Routine walkthroughs and condition reporting.'],
+  ['Owner communication and reporting', 'One point of contact, nothing withheld.'],
 ]
 
 export default function Management() {
   return (
-    <section id="management" className="section management-section" aria-label="Property Management">
-      <div className="section-inner management-inner">
-        <div className="management-copy">
-          <motion.div {...reveal(0)} className="eyebrow">
-            Property Management
-          </motion.div>
-          <motion.h2 {...reveal(0.08)} className="display-lg">
-            Your property, operated with an ownership mindset.
-          </motion.h2>
-        </div>
+    <section id="management" className="section management" aria-label="Property Management">
+      <div className="shell">
+        <SectionHead index="03" label="Property Management" />
 
-        <div className="management-list">
-          {SERVICES.map((label, i) => (
-            <motion.div key={label} {...reveal(0.06 * i, 16, 0.6)} className="glass-card management-row">
-              <span className="eyebrow" style={{ fontSize: '0.55rem', color: 'var(--ink-faint)' }}>
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <span className="management-row-label">{label}</span>
-            </motion.div>
-          ))}
+        <div className="management-grid">
+          <div className="management-aside">
+            <Headline lines={['Your property,', 'operated with an', 'ownership mindset.']} />
+            <Frame
+              src="/img/chapters/ch-entry.jpg"
+              alt="Entry of a CRD-managed residence"
+              className="management-figure"
+              delay={0.12}
+            />
+          </div>
+
+          <ol className="service-list">
+            {SERVICES.map(([title, note], i) => (
+              <Rise key={title} delay={0.06 * i} y={18} duration={0.7}>
+                <li className="service-row">
+                  <span className="service-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="service-body">
+                    <span className="service-title">{title}</span>
+                    <span className="service-note">{note}</span>
+                  </span>
+                </li>
+              </Rise>
+            ))}
+          </ol>
         </div>
       </div>
     </section>

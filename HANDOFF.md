@@ -112,10 +112,39 @@ do not bring those numbers back in any form.
 All motion is Framer Motion `whileInView`, via the presets in
 `src/lib/motion.js`:
 
-- `reveal(delay, y=22, duration=0.7)` — opacity + y-translate, fires
-  once per element when ~30% visible.
-- `revealScale(delay, duration=0.9)` — opacity + scale 1.02 → 1.00,
-  used for photography/video.
+- `fadeUp(delay, y, duration)` — opacity + y-translate, fires once per
+  element. Safe to spread directly onto any element.
+- `settle(delay, duration)` — scale 1.12 → 1.00 for a standalone image
+  with **no clipping ancestor**.
+- `lineReveal` / `curtainV` / `settleV` / `fadeV` — **variant
+  factories**, for elements that cannot observe themselves. See below.
+- `drawLine(delay)` — scaleX 0 → 1 for hairlines.
+
+### The self-clipping deadlock (read before touching a reveal)
+
+`whileInView` is backed by an IntersectionObserver, and an element's
+intersection rect is clipped by its ancestors' `overflow` **and** by
+its own `clip-path`. That creates a deadlock for exactly the two
+effects this site leans on:
+
+1. **Masked headline lines.** `.line-inner` is parked at `y: 110%`
+   inside a `.line-mask` with `overflow: hidden`. The line is clipped
+   fully out of its own intersection rect, so an observer on the line
+   never fires and the headline stays invisible forever.
+2. **Curtain-revealed media.** A `clip-path: inset(0% 0% 100% 0%)` on
+   the observed element clips it to zero height, so it never reports as
+   intersecting and never un-clips.
+
+The fix in both cases is the same: **the trigger goes on an unclipped
+parent, and the clipped child is driven by variants.** The parent gets
+`initial="rest" whileInView="show" viewport={IN_VIEW}`; the child gets
+`variants={curtainV(delay)}`. That's why `Frame` has a `.frame-clip`
+inner layer and `Headline` puts the trigger on the `<h2>` — do not
+"simplify" either by moving the trigger back onto the clipped element.
+
+Also: **both `clipPath` keyframes must use the same units.**
+`inset(0 0 100% 0)` → `inset(0 0 0% 0)` will not interpolate and the
+element stays fully clipped. Write all four values as percentages.
 
 There is no GSAP in this project (removed along with the scroll-scrub
 architecture — check `package.json` before reaching for it again).
@@ -170,3 +199,7 @@ before calling this "verified" for production traffic.
   photo and video on this site is real CRD material.
 - Do not let the investment video autoplay unconditionally — keep the
   `IntersectionObserver` gate.
+- Do not move a `whileInView` trigger onto an element that is clipped
+  by `clip-path` or by an ancestor's `overflow: hidden` — it will never
+  fire and the content will silently vanish. See "The self-clipping
+  deadlock" above.

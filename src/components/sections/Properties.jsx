@@ -1,8 +1,7 @@
-import { motion } from 'framer-motion'
-import { reveal, revealScale } from '../../lib/motion'
+import { SectionHead, Headline, Rise, Frame } from '../ui/Primitives'
 
-// Real CRD photography — a look at the kind of spaces CRD builds and
-// manages, not a listing sheet for one specific address.
+// Real CRD photography, laid out as an editorial spread rather than a
+// uniform tile grid — the composition is what signals the price point.
 const GALLERY = [
   { src: '/img/chapters/ch-exterior.jpg', label: 'New Construction' },
   { src: '/img/chapters/ch-kitchen.jpg', label: 'The Kitchen' },
@@ -10,35 +9,38 @@ const GALLERY = [
   { src: '/img/chapters/ch-bedroom.jpg', label: 'Primary Suites' },
   { src: '/img/chapters/ch-bathroom.jpg', label: 'Primary Baths' },
   { src: '/img/chapters/ch-terrace.jpg', label: 'Outdoor Living' },
-  { src: '/img/chapters/ch-garage.jpg', label: 'Garage & Storage' },
   { src: '/img/chapters/ch-plaque.jpg', label: 'Considered Detail' },
+  { src: '/img/chapters/ch-garage.jpg', label: 'Garage & Storage' },
 ]
 
 export default function Properties() {
   return (
-    <section id="properties" className="section properties-section" aria-label="Properties">
-      <div className="section-inner">
-        <motion.div {...reveal(0)} className="eyebrow">
-          Properties
-        </motion.div>
-        <motion.h2 {...reveal(0.08)} className="display-lg">
-          A look inside CRD residences.
-        </motion.h2>
-        <motion.p {...reveal(0.16)} className="body-copy" style={{ marginTop: '1.2rem' }}>
-          Residences and multi-family assets across the Northeast — built,
-          renovated and managed with the same attention throughout.
-        </motion.p>
+    <section id="properties" className="section properties" aria-label="Properties">
+      <div className="shell">
+        <SectionHead index="02" label="Properties" />
 
-        <div className="properties-grid">
+        <div className="properties-head">
+          <Headline lines={['A look inside', 'CRD residences.']} />
+          <Rise delay={0.16} className="properties-intro">
+            <p className="body-copy">
+              Residences and multi-family assets across the Northeast —
+              built, renovated and managed with the same attention
+              throughout.
+            </p>
+          </Rise>
+        </div>
+
+        <div className="gallery">
           {GALLERY.map((item, i) => (
-            <motion.figure
+            <Frame
               key={item.src}
-              className="property-card"
-              {...revealScale(0.05 * (i % 4))}
-            >
-              <img src={item.src} alt={item.label} loading="lazy" decoding="async" />
-              <figcaption>{item.label}</figcaption>
-            </motion.figure>
+              src={item.src}
+              alt={item.label}
+              caption={item.label}
+              index={String(i + 1).padStart(2, '0')}
+              delay={(i % 3) * 0.08}
+              priority={i < 2}
+            />
           ))}
         </div>
       </div>

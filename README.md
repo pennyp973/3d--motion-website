@@ -18,7 +18,12 @@ No pinned scroll-scrubbing, no generated 3D geometry.
    statistics or guaranteed-return language anywhere in this section —
    see "Investment copy rules" below.
 6. **Why CRD** — four pillars, one supporting paragraph.
-7. **Contact** — the ask, two CTAs, contact details.
+7. **Contact** — the ask, two CTAs, and a full footer.
+
+Sections carry a numbered marker (`01 ——— The CRD Approach`), alternate
+their ground tone so the page reads in strata, and are separated by a
+hairline seam. Headlines lift out of their own masks; photography and
+video open behind a curtain wipe.
 
 ## Stack
 
@@ -52,12 +57,14 @@ npm run preview  # serve the production build
   `contact`), collapses to a full-screen menu under 820px.
 - `src/components/ui/Cursor.jsx` — gold cursor dot + lagging ring,
   fine-pointer only.
-- `src/components/ui/RevealText.jsx` — masked line-by-line title
-  reveal (`RevealText`) and a fade/rise wrapper (`FadeIn`), used by the
-  hero's staged entrance.
-- `src/lib/motion.js` — `reveal()` / `revealScale()`, the shared
-  Framer Motion presets every section reuses for its `whileInView`
-  entrances.
+- `src/components/ui/Primitives.jsx` — the shared design vocabulary:
+  `SectionHead` (the `01 ——— Label` marker), `Headline` (masked
+  line-by-line reveal), `Rise`, `Frame` (curtain-revealed photography)
+  and `Button` (gold sweep + arrow). Sections are assembled from these
+  rather than restyling from scratch.
+- `src/lib/motion.js` — the shared reveal vocabulary (`fadeUp`,
+  `lineReveal`, `curtainV`, `settleV`, `drawLine`) every section reuses
+  for its scroll entrances.
 - `src/hooks/useMagnetic.js` — cursor-attraction hover for buttons.
 - `src/hooks/useIsMobile.js` — `(max-width: 820px), (pointer: coarse)`
   media query hook, drives the mobile nav.
@@ -82,11 +89,17 @@ pattern.
 
 ## Motion rules
 
-- Reveals: 400–900ms, opacity + 12–30px of y-translation, once per
-  element (`viewport: { once: true }`).
-- Media reveals: opacity + scale 1.02 → 1.00.
+- Reveals fire once per element (`viewport: { once: true }`): copy
+  rises 12–30px, headlines lift out of a mask, media opens behind a
+  curtain wipe while the image settles out of a 1.12 → 1.00 push-in.
 - No long pins, no scroll-scrubbed video, no camera-travel-style
   transitions. Navigation should never make a visitor wait for an
   animation to catch up.
+- **Never put a `whileInView` trigger on an element that is clipped**
+  by `clip-path` or by an ancestor's `overflow: hidden` — it is clipped
+  out of its own IntersectionObserver rect, so the reveal never fires
+  and the content stays invisible. The unclipped parent owns the
+  trigger; the clipped child is driven by variants. `HANDOFF.md` has
+  the full explanation.
 
 Responsive, reduced-motion aware, fully static, Netlify-ready.

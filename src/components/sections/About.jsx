@@ -1,22 +1,46 @@
-import { motion } from 'framer-motion'
-import { reveal } from '../../lib/motion'
+import { SectionHead, Headline, Rise } from '../ui/Primitives'
+
+const DISCIPLINES = [
+  ['Real Estate', 'Acquisition, sales and advisory across the Northeast.'],
+  ['Management', 'Full-service operations for owners who expect performance.'],
+  ['Investment', 'Ownership-minded capital and long-horizon strategy.'],
+]
 
 export default function About() {
   return (
-    <section id="about" className="section about-section" aria-label="The CRD Approach">
-      <div className="section-inner about-inner">
-        <motion.div {...reveal(0)} className="eyebrow">
-          The CRD Approach
-        </motion.div>
-        <motion.h2 {...reveal(0.08)} className="display-xl about-headline">
-          Build. Manage. Invest. Grow.
-        </motion.h2>
-        <motion.p {...reveal(0.16)} className="body-copy about-body">
-          From ground-up development to decades of asset performance —
-          one accountable partner across the entire life of a property.
-          CRD connects the people who build, operate and hold real
-          estate, so nothing gets lost in the handoff between them.
-        </motion.p>
+    <section id="about" className="section about" aria-label="The CRD Approach">
+      <div className="shell">
+        <SectionHead index="01" label="The CRD Approach" />
+
+        <div className="about-grid">
+          <div className="about-lead">
+            <Headline
+              className="display-xl"
+              lines={['Build. Manage.', 'Invest. Grow.']}
+            />
+          </div>
+
+          <div className="about-side">
+            <Rise delay={0.1}>
+              <p className="body-copy">
+                From ground-up development to decades of asset
+                performance — one accountable partner across the entire
+                life of a property. CRD connects the people who build,
+                operate and hold real estate, so nothing is lost in the
+                handoff between them.
+              </p>
+            </Rise>
+
+            <div className="discipline-list">
+              {DISCIPLINES.map(([title, note], i) => (
+                <Rise key={title} delay={0.18 + i * 0.09} className="discipline">
+                  <span className="discipline-title">{title}</span>
+                  <span className="discipline-note">{note}</span>
+                </Rise>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   )
