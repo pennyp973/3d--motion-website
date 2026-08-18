@@ -1,20 +1,24 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { gsap } from 'gsap'
-import { NAV_LINKS, roomTarget } from '../../journey/rooms'
-import { scrollToJourney, scrollToAnchor } from '../../journey/scrollTo'
 import { useIsMobile } from '../../hooks/useIsMobile'
 
-// Minimal corporate nav: wordmark left, section links right.
-// On mobile the links collapse into a full-screen menu.
+const NAV_LINKS = [
+  { label: 'About', id: 'about' },
+  { label: 'Properties', id: 'properties' },
+  { label: 'Management', id: 'management' },
+  { label: 'Investment', id: 'investment' },
+  { label: 'Contact', id: 'contact' },
+]
+
+// Minimal corporate nav: wordmark left, section links right. Fast,
+// native anchor scrolling — no wait for a camera or scene.
 export default function Nav() {
   const [open, setOpen] = useState(false)
   const isMobile = useIsMobile()
 
-  const goTo = (link) => {
+  const goTo = (id) => {
     setOpen(false)
-    if (link.anchor) scrollToAnchor(link.anchor, 2.4)
-    else scrollToJourney(roomTarget(link.roomId), 2.6)
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   return (
@@ -34,10 +38,10 @@ export default function Nav() {
         }}
       >
         <motion.button
-          onClick={() => gsap.to(window, { scrollTo: { y: 0 }, duration: 2, ease: 'power2.inOut' })}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 2.6, duration: 1.1 }}
+          transition={{ delay: 0.2, duration: 0.7 }}
           style={{
             background: 'none',
             border: 'none',
@@ -77,11 +81,11 @@ export default function Nav() {
           <motion.nav
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 2.8, duration: 1.1 }}
+            transition={{ delay: 0.3, duration: 0.7 }}
             style={{ display: 'flex', gap: 'clamp(1.2rem, 2.6vw, 2.6rem)', alignItems: 'center' }}
           >
             {NAV_LINKS.map((l) => (
-              <button key={l.label} className="nav-link" onClick={() => goTo(l)}>
+              <button key={l.id} className="nav-link" onClick={() => goTo(l.id)}>
                 {l.label}
               </button>
             ))}
@@ -93,7 +97,7 @@ export default function Nav() {
             onClick={() => setOpen((v) => !v)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.8, duration: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
             aria-label={open ? 'Close menu' : 'Open menu'}
             style={{
               background: 'none',
@@ -123,7 +127,7 @@ export default function Nav() {
             initial={{ clipPath: 'inset(0 0 100% 0)' }}
             animate={{ clipPath: 'inset(0 0 0% 0)' }}
             exit={{ clipPath: 'inset(0 0 100% 0)' }}
-            transition={{ duration: 0.85, ease: [0.76, 0, 0.24, 1] }}
+            transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}
             style={{
               position: 'fixed',
               inset: 0,
@@ -139,12 +143,12 @@ export default function Nav() {
           >
             {NAV_LINKS.map((l, i) => (
               <motion.button
-                key={l.label}
-                onClick={() => goTo(l)}
+                key={l.id}
+                onClick={() => goTo(l.id)}
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}
-                transition={{ delay: 0.25 + i * 0.06, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: 0.1 + i * 0.05, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                 className="menu-item"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)' }}
               >

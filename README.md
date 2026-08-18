@@ -1,34 +1,34 @@
-# CRD Property Group — Cinematic Property Experience
+# CRD Property Group — Cinematic Real Estate Site
 
-**One house, one camera, one journey.** The site is a continuous
-architectural walkthrough in four acts, built entirely from real CRD
-footage and photography. No generated 3D geometry anywhere.
+A fast, luxury, normal-scrolling site built from real CRD footage and
+photography. Black / warm-white / muted-gold branding, editorial
+typography, two cinematic videos, and clear, click-to-scroll navigation.
+No pinned scroll-scrubbing, no generated 3D geometry.
 
-**Act I — Arrival.** A pinned, scroll-scrubbed film of the house at
-dusk. Scroll drives the footage forward and backward and stops exactly
-as the front doors finish opening, handing the visitor across the
-threshold.
+## Pages, in order
 
-**Act II — The Residence.** Eleven rooms, each with its own camera
-dolly, its own kind of threshold, and its own story. Foyer, great
-room, kitchen, island, dining, primary suite, primary bath, the
-bronze hardware, garage, terrace, and a summary of the property in
-full. Business chapters (management, real estate, investment) are
-spoken from the room they belong to.
-
-**Act III — Build With Us.** The camera leaves the finished house and
-lands on open ground at sunrise, where scrolling raises a building out
-of it — slab, structure, envelope, delivery — with four clickable
-stages and a completion meter.
-
-**Act IV — The Invitation.** The camera comes to rest in front of the
-house at dusk, where it began.
+1. **Hero** — full-screen looping brand film (`crd-drone-web.mp4`),
+   plays straight through, no scroll interaction required.
+2. **About** — the CRD approach, one paragraph.
+3. **Properties** — a photo gallery of real CRD interiors and exteriors.
+4. **Management** — the six services CRD provides as property manager.
+5. **Investment** — the major feature section. A second cinematic film
+   (`crd-investment-web.mp4`) beside six benefit cards explaining the
+   case for multifamily and new-construction ownership. No fabricated
+   statistics or guaranteed-return language anywhere in this section —
+   see "Investment copy rules" below.
+6. **Why CRD** — four pillars, one supporting paragraph.
+7. **Contact** — the ask, two CTAs, contact details.
 
 ## Stack
 
 - **Vite + React 18**
-- **GSAP + ScrollTrigger** — scroll → film time, room windows, deep links
-- **Framer Motion** — typography reveals, cards, chart, menu, loader
+- **Framer Motion** — every reveal on the page (`whileInView`, once,
+  400–900ms, 12–30px of travel). No GSAP, no ScrollTrigger.
+- Native `<video>` for both films; the investment video is gated by
+  `IntersectionObserver` so it only plays while on screen.
+- Native anchor scrolling (`scrollIntoView({ behavior: 'smooth' })`)
+  for navigation — no custom scroll-tweening.
 
 ## Run
 
@@ -41,20 +41,52 @@ npm run preview  # serve the production build
 
 ## Architecture
 
-- `src/journey/rooms.js` — **the script.** Room order, camera moves,
-  threshold kinds, copy, facts, scroll weights, nav targets. Almost
-  every creative change to the tour is a change to this one file.
-- `src/components/rooms/RoomStage.jsx` — the camera: per-room dolly,
-  doorway transitions, depth layers, bloom, parallax.
-- `src/components/rooms/RoomInfo.jsx` — progressive room details.
-- `src/components/rooms/RoomNavigator.jsx` — where you are in the house.
-- `src/components/ui/HeroCinematic.jsx` — the arrival film.
-- `src/components/build/BuildWithUs.jsx` — the construction sequence.
-- `src/components/closing/ClosingSection.jsx` — the invitation.
-- `src/components/ui/Overlay.jsx` — business chapters, anchored to rooms.
+- `src/App.jsx` — page shell: `Nav`, the seven sections in order,
+  `Cursor`, film grain.
+- `src/components/sections/` — one file per section
+  (`Hero`, `About`, `Properties`, `Management`, `Investment`, `WhyCRD`,
+  `Contact`). Each is self-contained; reordering the page is reordering
+  these imports in `App.jsx`.
+- `src/components/ui/Nav.jsx` — fixed header, anchor links to each
+  section's `id` (`about`, `properties`, `management`, `investment`,
+  `contact`), collapses to a full-screen menu under 820px.
+- `src/components/ui/Cursor.jsx` — gold cursor dot + lagging ring,
+  fine-pointer only.
+- `src/components/ui/RevealText.jsx` — masked line-by-line title
+  reveal (`RevealText`) and a fade/rise wrapper (`FadeIn`), used by the
+  hero's staged entrance.
+- `src/lib/motion.js` — `reveal()` / `revealScale()`, the shared
+  Framer Motion presets every section reuses for its `whileInView`
+  entrances.
+- `src/hooks/useMagnetic.js` — cursor-attraction hover for buttons.
+- `src/hooks/useIsMobile.js` — `(max-width: 820px), (pointer: coarse)`
+  media query hook, drives the mobile nav.
 
-Media lives in `public/video/` (two scrub-optimised films, 1080p +
-720p, H.264 + VP9) and `public/img/chapters/` (1920×1080 JPGs — swap a
-file to change a room's photograph).
+Media lives in `public/video/` (`crd-drone-web.mp4` /
+`crd-drone-poster.jpg` for the hero, `crd-investment-web.mp4` /
+`crd-investment-poster.jpg` for Investment) and `public/img/chapters/`
+(real CRD photography, used by Properties and Contact).
+
+## Investment copy rules
+
+The Investment section is not allowed to say anything that implies a
+guaranteed outcome. Do not add:
+
+- Fabricated portfolio returns or appreciation percentages
+- Fabricated occupancy statistics
+- Guaranteed appreciation, guaranteed cash flow, or promises of profit
+
+Every benefit is written as a possibility ("can," "may," "depending
+on"), never a promise. If you add copy to this section, keep that
+pattern.
+
+## Motion rules
+
+- Reveals: 400–900ms, opacity + 12–30px of y-translation, once per
+  element (`viewport: { once: true }`).
+- Media reveals: opacity + scale 1.02 → 1.00.
+- No long pins, no scroll-scrubbed video, no camera-travel-style
+  transitions. Navigation should never make a visitor wait for an
+  animation to catch up.
 
 Responsive, reduced-motion aware, fully static, Netlify-ready.

@@ -12,7 +12,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          motion: ['gsap', 'framer-motion'],
+          motion: ['framer-motion'],
         },
       },
     },
