@@ -6,6 +6,7 @@ const PHONE_DISPLAY = '(781) 257-4696'
 const PHONE_HREF = 'tel:+17812574696'
 const EMAIL = 'cristalrijore@gmail.com'
 const INSTAGRAM = 'cristalrijorealty'
+const BROKERAGE = 'Cameron Real Estate Group'
 
 export default function Contact() {
   return (
@@ -58,7 +59,7 @@ export default function Contact() {
                 Cristal Rijo, <span className="agent-mark">REALTOR®</span>
               </span>
               <span className="agent-role">
-                Real Estate Agent &amp; Investor · Se habla español
+                Real Estate Agent &amp; Investor · {BROKERAGE} · Se habla español
               </span>
             </div>
           </Rise>
@@ -125,6 +126,7 @@ export default function Contact() {
           <div className="footer-col">
             <span className="footer-head">Contact</span>
             <span className="footer-agent">Cristal Rijo, REALTOR®</span>
+            <span>Brokerage: {BROKERAGE}</span>
             <a href={PHONE_HREF}>{PHONE_DISPLAY}</a>
             <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
             <a
@@ -140,6 +142,8 @@ export default function Contact() {
 
         <div className="shell footer-base">
           <span>© {new Date().getFullYear()} CRD Property Group</span>
+          <span>Brokerage: {BROKERAGE}</span>
+          <span>Equal Housing Opportunity</span>
           <span>Buyers · Sellers · Real Estate Investment</span>
         </div>
       </footer>
