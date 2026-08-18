@@ -39,8 +39,8 @@ export default function Contact() {
 
           <Rise delay={0.3}>
             <p className="body-copy contact-body">
-              Buyers, sellers and investors — bring us the property,
-              we'll bring the plan.
+              Buyers, sellers, property owners and investors — bring us
+              the property, we'll bring the plan.
             </p>
           </Rise>
 
@@ -109,9 +109,10 @@ export default function Contact() {
             <span className="footer-mark">CRD</span>
             <span className="footer-mark-sub">Property Group</span>
             <p className="footer-line">
-              Real estate and investment across Boston and the
-              Massachusetts North Shore. Buyers, sellers and investors —
-              with Spanish-speaking services available.
+              Real estate, property management and investment across
+              Boston and the Massachusetts North Shore. Buyers, sellers,
+              property owners and investors — with Spanish-speaking
+              services available.
             </p>
           </div>
 
@@ -144,7 +145,7 @@ export default function Contact() {
           <span>© {new Date().getFullYear()} CRD Property Group</span>
           <span>Brokerage: {BROKERAGE}</span>
           <span>Equal Housing Opportunity</span>
-          <span>Buyers · Sellers · Real Estate Investment</span>
+          <span>Buyers · Sellers · Property Management · Real Estate Investment</span>
         </div>
       </footer>
     </>
