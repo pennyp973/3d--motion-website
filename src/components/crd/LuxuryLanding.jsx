@@ -44,7 +44,7 @@ function GlassButton({ href, children, solid = false }) {
   )
 }
 
-function AutoVideo({ src, className = '', rate = 1, poster }) {
+function AutoVideo({ src, fallbackSrc, className = '', rate = 1, poster }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -82,6 +82,7 @@ function AutoVideo({ src, className = '', rate = 1, poster }) {
       poster={poster}
     >
       <source src={src} type="video/mp4" />
+      {fallbackSrc ? <source src={fallbackSrc} type="video/mp4" /> : null}
     </video>
   )
 }
@@ -164,6 +165,7 @@ export default function LuxuryLanding() {
       <section className="lux-hero" aria-label="CRD Property Group introduction">
         <AutoVideo
           src="/video/crd-drone.mp4"
+          fallbackSrc="/video/crd-hero-1080.mp4"
           poster="/video/crd-hero-poster.jpg"
           className="lux-hero__video"
           rate={0.8}
@@ -256,6 +258,7 @@ export default function LuxuryLanding() {
         <div className="lux-investment__sticky">
           <AutoVideo
             src="/video/crd-investment.mp4"
+            fallbackSrc="/video/crd-build-1080.mp4"
             poster="/video/crd-build-poster.jpg"
             className="lux-investment__video"
             rate={0.9}
@@ -319,7 +322,7 @@ export default function LuxuryLanding() {
           <motion.h2 variants={reveal}>A better property decision<br /><em>starts with a clearer view.</em></motion.h2>
           <motion.p variants={reveal}>Buying, selling, managing, investing or building — bring CRD into the conversation early.</motion.p>
           <motion.div variants={reveal}>
-            <GlassButton href="mailto:hello@crdpropertygroup.com" solid>Contact CRD</GlassButton>
+            <GlassButton href="#top" solid>Contact CRD</GlassButton>
           </motion.div>
         </motion.div>
 
